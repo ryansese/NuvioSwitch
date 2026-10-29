@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  switch:
+    name: Switch (.nro)
+    runs-on: ubuntu-latest
+    # Pinned to a dated tag so toolchain updates don't break builds unannounced
+    container: devkitpro/devkita64:20260219
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: cmake -B build_switch -DPLATFORM_SWITCH=ON -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        # two jobs: borealis's larger translation units run out of memory at higher parallelism
+        run: cmake --build build_switch --target NuvioSwitch.nro -j2
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NuvioSwitch.nro
+          path: build_switch/NuvioSwitch.nro
+          if-no-files-found: error
+
+  desktop:
+    name: Desktop (macOS) and tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: cmake -B build_desktop -DPLATFORM_DESKTOP=ON -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build_desktop -j
+
+      - name: Test
+        run: ctest --test-dir build_desktop --output-on-failure

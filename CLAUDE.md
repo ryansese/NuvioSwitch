@@ -6,7 +6,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NuvioSwitch is a Nintendo Switch homebrew app that streams media. It is a port of NuvioTV, an Android TV app (fork: https://github.com/ryansese/NuvioTV, upstream: NuvioMedia/NuvioTV).
 
-The planned stack is C++ with devkitPro/libnx, the borealis UI library and libmpv for playback. The app itself has no code yet, so there are no build, lint or test commands. Add them here once the project is scaffolded.
+The stack is C++17 with devkitPro/libnx, the borealis UI library and (from NuvioSwitch-0008) libmpv for playback. Work is planned as numbered OpenSpec changes in the workspace (`../../openspec/changes/nuvioswitch-NNNN-*`); commit subjects use the change title, e.g. `NuvioSwitch-0001 Scaffold CMake build and app shell`.
+
+## Commands
+
+The version is set once, in `CMakeLists.txt` (`VERSION_MAJOR/MINOR/ALTER`), and reaches the NACP and `version.hpp`.
+
+```bash
+# Desktop (macOS): build, run from the build dir (borealis loads ./resources/), test
+cmake -B build_desktop -DPLATFORM_DESKTOP=ON -DCMAKE_OSX_ARCHITECTURES=arm64
+cmake --build build_desktop -j
+(cd build_desktop && ./NuvioSwitch)          # -d debug logging, -v debug view
+ctest --test-dir build_desktop --output-on-failure
+
+# Switch, without a local devkitPro install (same image CI pins)
+docker run --rm -v "$PWD":/src -w /src devkitpro/devkita64:20260219 bash -c \
+  'cmake -B build_switch -DPLATFORM_SWITCH=ON -DCMAKE_BUILD_TYPE=Release && cmake --build build_switch --target NuvioSwitch.nro -j2'
+
+# Send to a console running the homebrew menu's netloader
+nxlink -s build_switch/NuvioSwitch.nro
+```
+
+- Keep Switch builds at `-j2` in Docker: higher parallelism runs the compiler out of memory on borealis sources.
+- CMake 4 rejects projects declaring a minimum below 3.5, so fetched dependencies whose CMakeLists are old (doctest) are used header-only via `SOURCE_SUBDIR`.
+- On desktop, Escape is B and Enter is A (borealis keyboard mapping). + (Start) quits because `main.cpp` enables borealis's global quit, which is off by default.
+- CI is `.github/workflows/build.yml`: a Switch job in `devkitpro/devkita64:<dated tag>` that uploads the `.nro`, and a macOS job that builds and runs `ctest`.
+
+## Layout
+
+- `src/main.cpp`: init, theme colour overrides (NuvioTV dark tokens), XML view registration, root activity.
+- `src/activity/`: activities (screens pushed on the stack). `src/tabs/`: tab content views; `PlaceholderTab` stands in for tabs whose feature hasn't landed.
+- `src/core/`: pure logic with no borealis dependency. It is compiled into the test target too, so keep UI code out of it.
+- `resources/`: `xml/` layouts, `i18n/en-US/app.json` (strings are read as `app/...`), `img/` (`icon.jpg` is the 256×256 `.nro` icon), `icon/` (NuvioTV sidebar SVGs), plus `font/`, `material/` and `i18n/en-US/hints.json` copied from borealis because it needs them at runtime.
+- `tests/`: doctest cases; `test_main.cpp` provides `main`.
 
 ## borealis (`library/borealis`)
 

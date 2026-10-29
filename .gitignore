@@ -1,0 +1,15 @@
+# Build output
+build*/
+cmake-build-*/
+*.nro
+*.nacp
+*.elf
+*.map
+
+# Local configuration (secrets, endpoints)
+config.local.json
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store

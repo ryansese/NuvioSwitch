@@ -1,0 +1,31 @@
+<brls:AppletFrame
+    iconInterpolation="linear"
+    footerHidden="false">
+    <brls:TabFrame
+        title="@i18n/app/title"
+        icon="@res/img/logo.png">
+
+        <brls:Tab label="@i18n/app/tabs/home">
+            <PlaceholderTab titleKey="app/tabs/home" noteKey="app/placeholder/home"/>
+        </brls:Tab>
+
+        <brls:Tab label="@i18n/app/tabs/search">
+            <PlaceholderTab titleKey="app/tabs/search" noteKey="app/placeholder/search"/>
+        </brls:Tab>
+
+        <brls:Tab label="@i18n/app/tabs/library">
+            <PlaceholderTab titleKey="app/tabs/library" noteKey="app/placeholder/library"/>
+        </brls:Tab>
+
+        <brls:Tab label="@i18n/app/tabs/addons">
+            <PlaceholderTab titleKey="app/tabs/addons" noteKey="app/placeholder/addons"/>
+        </brls:Tab>
+
+        <brls:Separator/>
+
+        <brls:Tab label="@i18n/app/tabs/settings">
+            <PlaceholderTab titleKey="app/tabs/settings" noteKey="app/placeholder/settings" showVersion="true"/>
+        </brls:Tab>
+
+    </brls:TabFrame>
+</brls:AppletFrame>

@@ -1,0 +1,18 @@
+{
+  "title": "NuvioSwitch",
+  "coming_soon": "Coming soon in a future update.",
+  "tabs": {
+    "home": "Home",
+    "search": "Search",
+    "library": "Library",
+    "addons": "Add-ons",
+    "settings": "Settings"
+  },
+  "placeholder": {
+    "home": "Catalogs from your add-ons will appear here.",
+    "search": "Search across your add-ons' catalogs.",
+    "library": "Your saved titles and watch progress.",
+    "addons": "Install and manage Stremio add-ons.",
+    "settings": "Playback, appearance and account settings."
+  }
+}
