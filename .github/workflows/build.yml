@@ -39,6 +39,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install dependencies
+        # libwebp for metahub's WebP posters; curl comes with macOS
+        run: brew install webp pkgconf
+
       - name: Configure
         run: cmake -B build_desktop -DPLATFORM_DESKTOP=ON -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_BUILD_TYPE=Release
 

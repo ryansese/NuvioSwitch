@@ -9,16 +9,21 @@ FetchContent_Declare(doctest
 )
 FetchContent_MakeAvailable(doctest)
 
-# Pure logic only: src/core is compiled without borealis
+# Pure logic only: src/core is compiled without borealis or curl.
+# The glue that needs them (curl_*.cpp, *_brls.cpp) is left out.
 file(GLOB TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 file(GLOB_RECURSE CORE_SRC ${PROJECT_SOURCE_DIR}/src/core/*.cpp)
+list(FILTER CORE_SRC EXCLUDE REGEX "/(curl_[^/]*|[^/]*_brls)\\.cpp$")
 
 add_executable(NuvioSwitchTests ${TEST_SRC} ${CORE_SRC})
 set_target_properties(NuvioSwitchTests PROPERTIES CXX_STANDARD 17)
 target_include_directories(NuvioSwitchTests PRIVATE
     ${PROJECT_SOURCE_DIR}/src
     ${CMAKE_BINARY_DIR}/generated
+    ${NLOHMANN_INCLUDE}
     ${doctest_SOURCE_DIR}/doctest
 )
+find_package(Threads REQUIRED)
+target_link_libraries(NuvioSwitchTests PRIVATE Threads::Threads PkgConfig::WEBP)
 
 add_test(NAME NuvioSwitchTests COMMAND NuvioSwitchTests)

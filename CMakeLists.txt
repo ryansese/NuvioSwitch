@@ -41,6 +41,27 @@ add_subdirectory(${BOREALIS_LIBRARY} ${CMAKE_BINARY_DIR}/borealis)
 find_package(Threads REQUIRED)
 list(APPEND APP_PLATFORM_LIB ${CMAKE_THREAD_LIBS_INIT})
 
+find_package(PkgConfig REQUIRED)
+
+# libcurl: the system/Homebrew curl on desktop, the switch-curl portlib on Switch (TLS through libnx)
+if (PLATFORM_SWITCH)
+    pkg_check_modules(CURL REQUIRED IMPORTED_TARGET libcurl)
+    list(APPEND APP_PLATFORM_LIB PkgConfig::CURL z)
+else ()
+    find_package(CURL REQUIRED)
+    list(APPEND APP_PLATFORM_LIB CURL::libcurl)
+endif ()
+
+# libwebp: metahub posters are WebP only. switch-libwebp on Switch, Homebrew webp on macOS
+pkg_check_modules(WEBP REQUIRED IMPORTED_TARGET libwebp)
+list(APPEND APP_PLATFORM_LIB PkgConfig::WEBP)
+
+# nlohmann/json, bundled with borealis
+set(NLOHMANN_INCLUDE ${BOREALIS_LIBRARY}/include/borealis/extern)
+
+# temporary network checks: a row of Cinemeta posters on Home and an HTTPS request at startup
+option(NUVIO_DEBUG_NETWORK "Debug poster row on Home and an HTTPS check at startup" OFF)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/version.hpp.in ${CMAKE_BINARY_DIR}/generated/version.hpp @ONLY)
 
 file(GLOB_RECURSE MAIN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
@@ -71,8 +92,11 @@ elseif (PLATFORM_SWITCH)
     )
 endif ()
 
-target_include_directories(${PROJECT_NAME} PRIVATE src ${CMAKE_BINARY_DIR}/generated ${APP_PLATFORM_INCLUDE})
+target_include_directories(${PROJECT_NAME} PRIVATE src ${CMAKE_BINARY_DIR}/generated ${NLOHMANN_INCLUDE} ${APP_PLATFORM_INCLUDE})
 target_compile_options(${PROJECT_NAME} PRIVATE -ffunction-sections -fdata-sections ${APP_PLATFORM_OPTION})
+if (NUVIO_DEBUG_NETWORK)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE NUVIO_DEBUG_NETWORK)
+endif ()
 target_link_libraries(${PROJECT_NAME} PRIVATE borealis ${APP_PLATFORM_LIB})
 
 # unit tests: desktop only

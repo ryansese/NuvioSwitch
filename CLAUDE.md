@@ -30,13 +30,20 @@ nxlink -s build_switch/NuvioSwitch.nro
 - Keep Switch builds at `-j2` in Docker: higher parallelism runs the compiler out of memory on borealis sources.
 - CMake 4 rejects projects declaring a minimum below 3.5, so fetched dependencies whose CMakeLists are old (doctest) are used header-only via `SOURCE_SUBDIR`.
 - On desktop, Escape is B and Enter is A (borealis keyboard mapping). + (Start) quits because `main.cpp` enables borealis's global quit, which is off by default.
+- Desktop needs Homebrew `webp` and `pkgconf` (`brew install webp pkgconf`); curl is the macOS system one. The Switch image already has `switch-curl` and `switch-libwebp`.
+- `-DNUVIO_DEBUG_NETWORK=ON` adds a temporary row of Cinemeta posters on Home and logs an HTTPS check at startup.
+- borealis logs to stdout, which is fully buffered when redirected and lost if the app is killed; capture runs with `stdbuf -oL ./NuvioSwitch -d > run.log`.
 - CI is `.github/workflows/build.yml`: a Switch job in `devkitpro/devkita64:<dated tag>` that uploads the `.nro`, and a macOS job that builds and runs `ctest`.
 
 ## Layout
 
-- `src/main.cpp`: init, theme colour overrides (NuvioTV dark tokens), XML view registration, root activity.
+- `src/main.cpp`: init, theme colour overrides (NuvioTV dark tokens), XML view registration, root activity; it creates the shared `HttpClient` and `ImageLoader` and tears them down after the main loop.
 - `src/activity/`: activities (screens pushed on the stack). `src/tabs/`: tab content views; `PlaceholderTab` stands in for tabs whose feature hasn't landed.
-- `src/core/`: pure logic with no borealis dependency. It is compiled into the test target too, so keep UI code out of it.
+- `src/core/`: services and logic, compiled into the test target too. Files that need borealis or curl are named `*_brls.cpp` or `curl_*.cpp`; `tests/CMakeLists.txt` leaves them out, so keep every other file free of both (inject them instead, as `HttpClient` does with its transport and UI poster).
+  - `async/`: `WorkerPool` and `postToUi` (`brls::sync`). `json/`: tolerant getters for loose add-on JSON.
+  - `net/`: `HttpClient` (worker pool, `Cache-Control` disk cache, results on the UI thread), `CurlExecutor`, NuvioTV's default headers.
+  - `storage/`: `Paths` (data folder: `sdmc:/switch/NuvioSwitch/`, `~/Library/Application Support/NuvioSwitch/`, or `NUVIOSWITCH_DATA_DIR`) and `Store`, the per-profile JSON key-value files with atomic writes.
+  - `image/`: `ImageLoader` for borealis `Image` views, memory and disk caches, WebP decoding.
 - `resources/`: `xml/` layouts, `i18n/en-US/app.json` (strings are read as `app/...`), `img/` (`icon.jpg` is the 256×256 `.nro` icon), `icon/` (NuvioTV sidebar SVGs), plus `font/`, `material/` and `i18n/en-US/hints.json` copied from borealis because it needs them at runtime.
 - `tests/`: doctest cases; `test_main.cpp` provides `main`.
 

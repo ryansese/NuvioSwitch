@@ -3,7 +3,8 @@
 #include <borealis.hpp>
 
 // Stand-in content for a tab whose feature hasn't landed yet.
-// XML attributes: titleKey and noteKey (i18n keys), showVersion (bool).
+// XML attributes: titleKey and noteKey (i18n keys), showVersion (bool),
+// debugPosters (bool, only has an effect with -DNUVIO_DEBUG_NETWORK=ON).
 class PlaceholderTab : public brls::Box
 {
   public:
