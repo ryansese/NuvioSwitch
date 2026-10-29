@@ -9,7 +9,6 @@
     "settings": "Settings"
   },
   "placeholder": {
-    "home": "Catalogs from your add-ons will appear here.",
     "search": "Search across your add-ons' catalogs.",
     "library": "Your saved titles and watch progress.",
     "settings": "Playback, appearance and account settings."
@@ -40,5 +39,24 @@
     "error_invalid_scheme": "Add-on URL must start with http or https",
     "error_fetch": "Couldn't load the add-on: {}",
     "error_manifest": "That URL doesn't serve a valid add-on manifest"
+  },
+  "home": {
+    "type_movie": "Movie",
+    "type_series": "Series",
+    "from": "from {}",
+    "see_all": "See all",
+    "loading": "Loading catalogs…",
+    "loading_row": "Loading…",
+    "no_catalogs": "No catalog add-ons installed",
+    "open_addons": "Open Add-ons",
+    "error": "Couldn't load any catalogs. Check your connection.",
+    "retry": "Retry",
+    "page_failed": "Couldn't load more: {}"
+  },
+  "details_stub": {
+    "type": "Type: {}",
+    "id": "ID: {}",
+    "source": "From: {}",
+    "note": "Details arrive in a later update."
   }
 }

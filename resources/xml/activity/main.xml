@@ -6,7 +6,7 @@
         icon="@res/img/logo.png">
 
         <brls:Tab label="@i18n/app/tabs/home">
-            <PlaceholderTab titleKey="app/tabs/home" noteKey="app/placeholder/home" debugPosters="true"/>
+            <HomeTab/>
         </brls:Tab>
 
         <brls:Tab label="@i18n/app/tabs/search">

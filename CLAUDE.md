@@ -31,17 +31,18 @@ nxlink -s build_switch/NuvioSwitch.nro
 - CMake 4 rejects projects declaring a minimum below 3.5, so fetched dependencies whose CMakeLists are old (doctest) are used header-only via `SOURCE_SUBDIR`.
 - On desktop, Escape is B and Enter is A (borealis keyboard mapping). + (Start) quits because `main.cpp` enables borealis's global quit, which is off by default.
 - Desktop needs Homebrew `webp` and `pkgconf` (`brew install webp pkgconf`); curl is the macOS system one. The Switch image already has `switch-curl` and `switch-libwebp`.
-- `-DNUVIO_DEBUG_NETWORK=ON` adds a temporary row of Cinemeta posters on Home and logs an HTTPS check at startup.
+- `-DNUVIO_DEBUG_NETWORK=ON` logs an HTTPS check at startup.
 - borealis logs to stdout, which is fully buffered when redirected and lost if the app is killed; capture runs with `stdbuf -oL ./NuvioSwitch -d > run.log`.
 - CI is `.github/workflows/build.yml`: a Switch job in `devkitpro/devkita64:<dated tag>` that uploads the `.nro`, and a macOS job that builds and runs `ctest`.
 
 ## Layout
 
-- `src/main.cpp`: init, theme colour overrides (NuvioTV dark tokens), XML view registration, root activity; it creates the shared `HttpClient`, `ImageLoader` and `AddonRepository` and tears them down after the main loop.
+- `src/main.cpp`: init, theme colour overrides (NuvioTV dark tokens), XML view registration, root activity; it creates the shared `HttpClient`, `ImageLoader`, `AddonRepository` and `CatalogRepository` and tears them down after the main loop.
 - `src/activity/`: activities (screens pushed on the stack). `src/tabs/`: tab content views; `PlaceholderTab` stands in for tabs whose feature hasn't landed.
-- `src/domain/`: plain models (`Addon`, catalogs, resources), ported from NuvioTV `domain/model`.
-- `src/data/`: repositories and the pure logic behind them, one folder per feature. `addons/`: URL rules, manifest parser, display names, capability queries (`addonsFor`) and `AddonRepository`, which keeps the installed list in the `addons` store and raw manifests in `addon_manifest_cache`, and notifies subscribers on the UI thread.
-- `src/ui/`: feature screens built on borealis, one folder per feature (`addons/`: the Add-ons tab and its cells).
+- `src/domain/`: plain models (`Addon`, `MetaPreview`, `CatalogRow`) and catalog paging, ported from NuvioTV `domain/model`.
+- `src/data/`: repositories and the pure logic behind them, one folder per feature. `addons/`: URL rules, manifest parser, display names, capability queries (`addonsFor`) and `AddonRepository`, which keeps the installed list in the `addons` store and raw manifests in `addon_manifest_cache`, and notifies subscribers on the UI thread. `catalog/`: catalog URLs, response parsing, which catalogs Home shows and the hero pick (`home_selection`), and `CatalogRepository`.
+- `src/ui/`: feature screens built on borealis, one folder per feature: `home/` (Home tab, hero, catalog rows), `catalog/` (See all), `addons/` (Add-ons tab), `common/` (`PosterCell`). `navigation.hpp` opens screens other features reach (details, See all).
+- borealis rebuilds a tab's view each time the tab is selected, so state that should survive tab switches lives outside the view (Home keeps loaded catalog pages in a session cache).
 - `src/core/`: services and logic. It is compiled into the test target with `src/domain/` and `src/data/`. Files in those three that need borealis or curl are named `*_brls.cpp` or `curl_*.cpp`; `tests/CMakeLists.txt` leaves them out, so keep every other file free of both (inject them instead, as `HttpClient` does with its transport and UI poster).
   - `async/`: `WorkerPool` and `postToUi` (`brls::sync`). `json/`: tolerant getters for loose add-on JSON.
   - `net/`: `HttpClient` (worker pool, `Cache-Control` disk cache, results on the UI thread), `CurlExecutor`, NuvioTV's default headers.

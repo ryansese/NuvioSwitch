@@ -1,0 +1,113 @@
+{
+  "metas": [
+    {
+      "id": "tt0000001",
+      "name": "Item 1",
+      "poster": "https://img.example/1.jpg",
+      "type": "series",
+      "imdbRating": "7.5",
+      "posterShape": "Landscape",
+      "genres": [
+        "Drama",
+        1999,
+        null
+      ]
+    },
+    {
+      "id": "tt0000002",
+      "name": "Item 2",
+      "poster": "https://img.example/2.jpg",
+      "imdbRating": 8.1,
+      "background": "https://img.example/bg2.jpg"
+    },
+    {
+      "id": "tt0000003",
+      "name": "Item 3",
+      "poster": "https://img.example/3.jpg",
+      "imdbRating": "n/a",
+      "type": "  "
+    },
+    {
+      "id": "tt9000001",
+      "poster": "x"
+    },
+    {
+      "id": "tt0000004",
+      "name": "Item 4",
+      "poster": "https://img.example/4.jpg"
+    },
+    {
+      "id": "tt0000005",
+      "name": "Item 5",
+      "poster": "https://img.example/5.jpg"
+    },
+    {
+      "id": "tt0000006",
+      "name": "Item 6",
+      "poster": "https://img.example/6.jpg"
+    },
+    {
+      "id": "tt9000002",
+      "name": "   "
+    },
+    {
+      "id": "tt0000007",
+      "name": "Item 7",
+      "poster": "https://img.example/7.jpg"
+    },
+    {
+      "id": "tt0000008",
+      "name": "Item 8",
+      "poster": "https://img.example/8.jpg"
+    },
+    {
+      "id": "tt0000002",
+      "name": "Duplicate of Item 2"
+    },
+    {
+      "id": "tt0000009",
+      "name": "Item 9",
+      "poster": "https://img.example/9.jpg"
+    },
+    {
+      "id": "tt0000010",
+      "name": "Item 10",
+      "poster": "https://img.example/10.jpg"
+    },
+    {
+      "id": "tt0000011",
+      "name": "Item 11",
+      "poster": "https://img.example/11.jpg"
+    },
+    {
+      "id": "tt0000012",
+      "name": "Item 12",
+      "poster": "https://img.example/12.jpg"
+    },
+    {
+      "id": "tt0000013",
+      "name": "Item 13",
+      "poster": "https://img.example/13.jpg"
+    },
+    {
+      "id": "tt0000014",
+      "name": "Item 14",
+      "poster": "https://img.example/14.jpg"
+    },
+    {
+      "id": "tt0000015",
+      "name": "Item 15",
+      "poster": "https://img.example/15.jpg"
+    },
+    {
+      "id": "tt0000016",
+      "name": "Item 16",
+      "poster": "https://img.example/16.jpg"
+    },
+    {
+      "id": "tt0000017",
+      "name": "Item 17",
+      "poster": "https://img.example/17.jpg"
+    }
+  ]
+}

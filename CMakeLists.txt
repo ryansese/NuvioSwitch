@@ -60,7 +60,7 @@ list(APPEND APP_PLATFORM_LIB PkgConfig::WEBP)
 set(NLOHMANN_INCLUDE ${BOREALIS_LIBRARY}/include/borealis/extern)
 
 # temporary network checks: a row of Cinemeta posters on Home and an HTTPS request at startup
-option(NUVIO_DEBUG_NETWORK "Debug poster row on Home and an HTTPS check at startup" OFF)
+option(NUVIO_DEBUG_NETWORK "Log an HTTPS check at startup" OFF)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/version.hpp.in ${CMAKE_BINARY_DIR}/generated/version.hpp @ONLY)
 
