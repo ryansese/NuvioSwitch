@@ -37,15 +37,18 @@ nxlink -s build_switch/NuvioSwitch.nro
 
 ## Layout
 
-- `src/main.cpp`: init, theme colour overrides (NuvioTV dark tokens), XML view registration, root activity; it creates the shared `HttpClient` and `ImageLoader` and tears them down after the main loop.
+- `src/main.cpp`: init, theme colour overrides (NuvioTV dark tokens), XML view registration, root activity; it creates the shared `HttpClient`, `ImageLoader` and `AddonRepository` and tears them down after the main loop.
 - `src/activity/`: activities (screens pushed on the stack). `src/tabs/`: tab content views; `PlaceholderTab` stands in for tabs whose feature hasn't landed.
-- `src/core/`: services and logic, compiled into the test target too. Files that need borealis or curl are named `*_brls.cpp` or `curl_*.cpp`; `tests/CMakeLists.txt` leaves them out, so keep every other file free of both (inject them instead, as `HttpClient` does with its transport and UI poster).
+- `src/domain/`: plain models (`Addon`, catalogs, resources), ported from NuvioTV `domain/model`.
+- `src/data/`: repositories and the pure logic behind them, one folder per feature. `addons/`: URL rules, manifest parser, display names, capability queries (`addonsFor`) and `AddonRepository`, which keeps the installed list in the `addons` store and raw manifests in `addon_manifest_cache`, and notifies subscribers on the UI thread.
+- `src/ui/`: feature screens built on borealis, one folder per feature (`addons/`: the Add-ons tab and its cells).
+- `src/core/`: services and logic. It is compiled into the test target with `src/domain/` and `src/data/`. Files in those three that need borealis or curl are named `*_brls.cpp` or `curl_*.cpp`; `tests/CMakeLists.txt` leaves them out, so keep every other file free of both (inject them instead, as `HttpClient` does with its transport and UI poster).
   - `async/`: `WorkerPool` and `postToUi` (`brls::sync`). `json/`: tolerant getters for loose add-on JSON.
   - `net/`: `HttpClient` (worker pool, `Cache-Control` disk cache, results on the UI thread), `CurlExecutor`, NuvioTV's default headers.
   - `storage/`: `Paths` (data folder: `sdmc:/switch/NuvioSwitch/`, `~/Library/Application Support/NuvioSwitch/`, or `NUVIOSWITCH_DATA_DIR`) and `Store`, the per-profile JSON key-value files with atomic writes.
   - `image/`: `ImageLoader` for borealis `Image` views, memory and disk caches, WebP decoding.
 - `resources/`: `xml/` layouts, `i18n/en-US/app.json` (strings are read as `app/...`), `img/` (`icon.jpg` is the 256×256 `.nro` icon), `icon/` (NuvioTV sidebar SVGs), plus `font/`, `material/` and `i18n/en-US/hints.json` copied from borealis because it needs them at runtime.
-- `tests/`: doctest cases; `test_main.cpp` provides `main`.
+- `tests/`: doctest cases; `test_main.cpp` provides `main`. `fixtures/` holds real add-on manifests, read with `readFixture()` from `test_util.hpp`.
 
 ## borealis (`library/borealis`)
 

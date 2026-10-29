@@ -1,0 +1,16 @@
+{
+  "id": "community.example.sloppy",
+  "version": "0.1.0",
+  "name": "Sloppy",
+  "description": null,
+  "logo": 42,
+  "types": "movie",
+  "resources": [42, null, {"types": ["movie"]}, {"name": "stream", "types": "movie"}, "meta"],
+  "catalogs": [
+    {"type": "movie", "name": "No id"},
+    {"type": "movie", "id": "ok", "name": "Fine", "extra": "not a list", "pageSize": "lots"},
+    "not a catalog",
+    {"type": "movie", "id": "nameless"}
+  ],
+  "behaviorHints": "yes"
+}

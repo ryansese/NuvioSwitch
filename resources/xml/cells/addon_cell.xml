@@ -1,0 +1,65 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    axis="row"
+    alignItems="center"
+    focusable="true"
+    cornerRadius="12"
+    backgroundColor="@theme/nuvio/card"
+    marginBottom="12"
+    paddingTop="16"
+    paddingBottom="16"
+    paddingLeft="16"
+    paddingRight="20">
+
+    <brls:Image
+        id="addon/logo"
+        width="64"
+        height="64"
+        cornerRadius="8"
+        scalingType="fit"
+        marginRight="20"/>
+
+    <brls:Box
+        width="auto"
+        height="auto"
+        grow="1"
+        axis="column">
+
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="row"
+            alignItems="center"
+            marginBottom="6">
+
+            <brls:Label
+                id="addon/name"
+                fontSize="22"
+                singleLine="true"
+                marginRight="12"/>
+
+            <brls:Label
+                id="addon/version"
+                fontSize="16"
+                textColor="@theme/brls/text_disabled"
+                marginRight="12"/>
+
+            <brls:Label
+                id="addon/off"
+                text="@i18n/app/addons/off"
+                fontSize="14"
+                textColor="@theme/brls/text_disabled"
+                visibility="gone"
+                cornerRadius="4"
+                borderColor="@theme/brls/text_disabled"
+                borderThickness="1"/>
+        </brls:Box>
+
+        <brls:Label
+            id="addon/description"
+            fontSize="16"
+            textColor="@theme/brls/text_disabled"/>
+    </brls:Box>
+
+</brls:Box>

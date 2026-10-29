@@ -1,0 +1,47 @@
+{
+  "id": "community.example.debrid",
+  "version": "2.4.1",
+  "name": "Example Debrid",
+  "description": "A configured add-on; its install URL carries a token in the query string.",
+  "logo": "https://example.com/logo.png",
+  "background": "https://example.com/background.jpg",
+  "types": ["movie", "series", " anime ", ""],
+  "idPrefixes": ["tt", "kitsu:"],
+  "resources": [
+    "catalog",
+    {"name": "stream", "types": ["movie", "series"], "idPrefixes": ["tt"]},
+    {"name": "meta", "types": ["anime"], "idPrefixes": ["kitsu:"]},
+    {"name": "subtitle"}
+  ],
+  "catalogs": [
+    {
+      "type": " anime ",
+      "id": "kitsu-trending",
+      "name": "Trending",
+      "showInHome": true,
+      "pageSize": 20,
+      "extra": [
+        " Skip ",
+        {"name": "Genre", "isRequired": "true", "options": ["Action", 1999, null], "default": "Action", "optionsLimit": "1"},
+        {"name": "search", "isRequired": 0, "options": [], "default": ""},
+        {"name": "  "},
+        "",
+        " Skip "
+      ]
+    },
+    {
+      "type": "movie",
+      "id": "recent",
+      "name": "Recently added",
+      "showInHome": false,
+      "extraSupported": ["search", "skip"]
+    },
+    {
+      "type": "series",
+      "id": "required-number",
+      "name": "Needs genre",
+      "extra": [{"name": "genre", "isRequired": 1}]
+    }
+  ],
+  "behaviorHints": {"configurable": true, "configurationRequired": false}
+}

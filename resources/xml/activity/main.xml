@@ -18,7 +18,7 @@
         </brls:Tab>
 
         <brls:Tab label="@i18n/app/tabs/addons">
-            <PlaceholderTab titleKey="app/tabs/addons" noteKey="app/placeholder/addons"/>
+            <AddonsTab/>
         </brls:Tab>
 
         <brls:Separator/>

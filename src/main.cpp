@@ -13,10 +13,13 @@
 #include "core/net/http_client.hpp"
 #include "core/storage/paths.hpp"
 #include "core/storage/store.hpp"
+#include "data/addons/addon_repository.hpp"
 #include "tabs/placeholder_tab.hpp"
+#include "ui/addons/addons_tab.hpp"
 #include "version.hpp"
 
 using namespace nuvio::core;
+using nuvio::data::addons::AddonRepository;
 
 using namespace brls::literals; // for _i18n
 
@@ -110,6 +113,12 @@ int main(int argc, char* argv[])
     auto images = std::make_unique<image::ImageLoader>(transport, headers, storage::Paths::imageCacheDir(), imageMemory);
     image::ImageLoader::setShared(images.get());
 
+    // add-ons: cached manifests are shown at once, missing and stale ones fetched in the background
+    auto addons = std::make_unique<AddonRepository>(AddonRepository::Config{http.get(),
+        storage::Store::open("addons"), storage::Store::open("addon_manifest_cache", storage::Scope::Global)});
+    AddonRepository::setShared(addons.get());
+    addons->start();
+
     applyNuvioTheme();
     brls::Application::getPlatform()->setThemeVariant(brls::ThemeVariant::DARK);
 
@@ -117,6 +126,7 @@ int main(int argc, char* argv[])
     brls::Application::setGlobalQuit(true);
 
     brls::Application::registerXMLView("PlaceholderTab", PlaceholderTab::create);
+    brls::Application::registerXMLView("AddonsTab", AddonsTab::create);
 
     brls::Application::pushActivity(new MainActivity());
 
@@ -128,6 +138,8 @@ int main(int argc, char* argv[])
         ;
 
     // stop workers before the curl share and global state they use go away
+    AddonRepository::setShared(nullptr);
+    addons.reset();
     image::ImageLoader::setShared(nullptr);
     images.reset();
     net::HttpClient::setShared(nullptr);

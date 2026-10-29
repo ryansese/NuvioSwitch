@@ -1,0 +1,19 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    axis="row"
+    alignItems="center"
+    focusable="true"
+    cornerRadius="12"
+    backgroundColor="@theme/nuvio/card"
+    marginBottom="12"
+    paddingTop="18"
+    paddingBottom="18"
+    paddingLeft="20"
+    paddingRight="20">
+
+    <brls:Label
+        id="action/title"
+        fontSize="20"/>
+
+</brls:Box>

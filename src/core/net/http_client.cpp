@@ -50,6 +50,12 @@ void HttpClient::shutdown()
 
 RequestHandle HttpClient::send(Request request, Callback callback)
 {
+    return sendPrepared(std::move(request), [callback = std::move(callback)](HttpResult result)
+        { return std::function<void()>([callback, result = std::move(result)]() mutable { callback(std::move(result)); }); });
+}
+
+RequestHandle HttpClient::sendPrepared(Request request, Prepare prepare)
+{
     auto cancelled = std::make_shared<std::atomic<bool>>(stopped.load());
     {
         std::lock_guard<std::mutex> lock(liveMutex);
@@ -57,18 +63,21 @@ RequestHandle HttpClient::send(Request request, Callback callback)
         live.push_back(cancelled);
     }
 
-    pool.post([this, request = std::move(request), callback = std::move(callback), cancelled]
+    pool.post([this, request = std::move(request), prepare = std::move(prepare), cancelled]
         {
             if (cancelled->load())
                 return;
             HttpResult result = execute(request, *cancelled);
             if (cancelled->load())
                 return;
-            config.post([callback, cancelled, result = std::move(result)]() mutable
+            std::function<void()> deliver = prepare(std::move(result));
+            if (cancelled->load() || !deliver)
+                return;
+            config.post([deliver = std::move(deliver), cancelled]
                 {
                     // cancelled between the worker finishing and the UI thread running this
                     if (!cancelled->load())
-                        callback(std::move(result));
+                        deliver();
                 });
         });
     return RequestHandle(cancelled);

@@ -2,9 +2,20 @@
 
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <unistd.h>
+
+// The contents of tests/fixtures/<name>, or "" when it can't be read.
+inline std::string readFixture(const std::string& name)
+{
+    std::ifstream in(std::string(NUVIO_TEST_FIXTURES) + name, std::ios::binary);
+    std::ostringstream out;
+    out << in.rdbuf();
+    return out.str();
+}
 
 // A fresh directory under the system temp folder, deleted with its contents at scope end.
 // path() ends with '/'.

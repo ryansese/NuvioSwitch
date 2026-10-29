@@ -25,6 +25,8 @@ class HttpClient
     // Runs a function on the UI thread.
     using Poster   = std::function<void(std::function<void()>)>;
     using Callback = std::function<void(HttpResult)>;
+    // Runs on the worker with the result; the function it returns runs on the UI thread.
+    using Prepare = std::function<std::function<void()>(HttpResult)>;
 
     struct Config
     {
@@ -41,6 +43,10 @@ class HttpClient
     // Queues request; callback runs on the UI thread exactly once, unless the
     // returned handle is cancelled first, in which case it never runs.
     RequestHandle send(Request request, Callback callback);
+
+    // Like send, but prepare runs on the worker first, so large bodies can be
+    // parsed off the UI thread. The function it returns follows send's rules.
+    RequestHandle sendPrepared(Request request, Prepare prepare);
 
     // Cache lookup, transport and cache store, on the calling thread.
     HttpResult execute(const Request& request, const std::atomic<bool>& cancelled);
