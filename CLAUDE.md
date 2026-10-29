@@ -22,7 +22,7 @@ Platform build instructions are in the fork's wiki (https://github.com/xfangfang
 
 ## Reference source: NuvioTV
 
-A local checkout of the fork is at `../nuvio-specs/repos/NuvioTV`, a submodule of the `nuvio-specs` OpenSpec workspace. Use it to look up behaviour. It is Kotlin/Jetpack Compose and does not run on the Switch, so port behaviour and data flow rather than code. Treat it as read-only from this repo. Its own guidance is in `../nuvio-specs/.claude/rules/NuvioTV.md`.
+This repo and NuvioTV are both submodules of the `nuvio-specs` OpenSpec workspace, so a local checkout of the fork sits next to this one at `../NuvioTV`. Use it to look up behaviour. It is Kotlin/Jetpack Compose and does not run on the Switch, so port behaviour and data flow rather than code. Treat it as read-only from this repo. Its own guidance is in the workspace at `../../.claude/rules/nuviotv.md`.
 
 The parts of NuvioTV that matter most for the port, under `app/src/main/java/com/nuvio/tv/`:
 
@@ -33,4 +33,4 @@ The parts of NuvioTV that matter most for the port, under `app/src/main/java/com
 - **Playback** uses Media3, with libmpv as a second player backend (`libmpv-android/`).
 - **Navigation** is built around a TV remote and focus handling, which maps naturally to a gamepad.
 
-Specs for Nuvio ecosystem changes are written in `../nuvio-specs/openspec/`.
+Specs for Nuvio ecosystem changes are written in the workspace at `../../openspec/`.
