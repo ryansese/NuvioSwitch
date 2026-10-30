@@ -53,10 +53,14 @@
     "retry": "Retry",
     "page_failed": "Couldn't load more: {}"
   },
-  "details_stub": {
-    "type": "Type: {}",
-    "id": "ID: {}",
-    "source": "From: {}",
-    "note": "Details arrive in a later update."
+  "details": {
+    "play": "Play",
+    "retry": "Retry",
+    "error": "Couldn't load details",
+    "season": "Season {}",
+    "specials": "Specials",
+    "director": "Director: {}",
+    "cast": "Cast: {}",
+    "streams_soon": "Stream selection arrives in a later update."
   }
 }

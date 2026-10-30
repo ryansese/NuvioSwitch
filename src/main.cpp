@@ -15,6 +15,7 @@
 #include "core/storage/store.hpp"
 #include "data/addons/addon_repository.hpp"
 #include "data/catalog/catalog_repository.hpp"
+#include "data/meta/meta_repository.hpp"
 #include "tabs/placeholder_tab.hpp"
 #include "ui/addons/addons_tab.hpp"
 #include "ui/home/home_tab.hpp"
@@ -124,6 +125,9 @@ int main(int argc, char* argv[])
     auto catalogs = std::make_unique<nuvio::data::catalog::CatalogRepository>(*http);
     nuvio::data::catalog::CatalogRepository::setShared(catalogs.get());
 
+    auto metas = std::make_unique<nuvio::data::meta::MetaRepository>(nuvio::data::meta::MetaRepository::Config{http.get()});
+    nuvio::data::meta::MetaRepository::setShared(metas.get());
+
     applyNuvioTheme();
     brls::Application::getPlatform()->setThemeVariant(brls::ThemeVariant::DARK);
 
@@ -144,6 +148,8 @@ int main(int argc, char* argv[])
         ;
 
     // stop workers before the curl share and global state they use go away
+    nuvio::data::meta::MetaRepository::setShared(nullptr);
+    metas.reset();
     nuvio::data::catalog::CatalogRepository::setShared(nullptr);
     catalogs.reset();
     AddonRepository::setShared(nullptr);

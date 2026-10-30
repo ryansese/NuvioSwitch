@@ -1,0 +1,139 @@
+<!-- height is auto: the applet frame grows it to the space between header and footer -->
+<brls:Box
+    width="100%"
+    height="auto"
+    axis="row">
+
+    <brls:Image
+        id="details/backdrop"
+        positionType="absolute"
+        positionTop="0"
+        positionLeft="0"
+        positionRight="0"
+        positionBottom="0"
+        scalingType="fill"
+        alpha="0.5"/>
+
+    <!-- loading and error -->
+    <brls:Box
+        id="details/status"
+        width="100%"
+        height="auto"
+        axis="column"
+        alignItems="center"
+        justifyContent="center">
+
+        <brls:ProgressSpinner
+            id="details/spinner"
+            marginBottom="20"/>
+
+        <brls:Label
+            id="details/message"
+            fontSize="20"
+            marginBottom="20"
+            textColor="@theme/brls/text_disabled"/>
+
+        <brls:Button
+            id="details/retry"
+            text="@i18n/app/details/retry"
+            visibility="gone"/>
+    </brls:Box>
+
+    <!-- hero -->
+    <brls:ScrollingFrame
+        id="details/heroScroll"
+        width="500"
+        height="auto"
+        visibility="gone">
+
+        <brls:Box
+            id="details/hero"
+            axis="column"
+            paddingTop="32"
+            paddingLeft="48"
+            paddingRight="32"
+            paddingBottom="32">
+
+            <brls:Image
+                id="details/logo"
+                maxWidth="400"
+                height="110"
+                scalingType="fit"
+                marginBottom="16"/>
+
+            <brls:Label
+                id="details/title"
+                fontSize="36"
+                marginBottom="14"/>
+
+            <brls:Label
+                id="details/info"
+                fontSize="16"
+                marginBottom="14"/>
+
+            <brls:Label
+                id="details/genres"
+                fontSize="16"
+                textColor="@theme/brls/text_disabled"
+                marginBottom="14"/>
+
+            <brls:Button
+                id="details/play"
+                text="@i18n/app/details/play"
+                style="primary"
+                marginBottom="20"/>
+
+            <brls:Label
+                id="details/description"
+                fontSize="16"
+                marginBottom="16"/>
+
+            <brls:Label
+                id="details/director"
+                fontSize="15"
+                textColor="@theme/brls/text_disabled"
+                marginBottom="8"/>
+
+            <brls:Label
+                id="details/cast"
+                fontSize="15"
+                textColor="@theme/brls/text_disabled"/>
+        </brls:Box>
+    </brls:ScrollingFrame>
+
+    <!-- seasons and episodes, series only -->
+    <brls:Box
+        id="details/episodes"
+        grow="1"
+        height="auto"
+        axis="column"
+        visibility="gone"
+        paddingTop="24"
+        paddingRight="48">
+
+        <!-- the tabs slide inside this clipped box; borealis's HScrollingFrame breaks the column layout around it -->
+        <brls:Box
+            id="details/seasonScroll"
+            width="100%"
+            height="60"
+            clipsToBounds="true"
+            marginBottom="8">
+
+            <brls:Box
+                id="details/seasons"
+                axis="row"
+                shrink="0"
+                alignItems="center"
+                paddingTop="6"
+                paddingBottom="6"
+                paddingLeft="6"/>
+        </brls:Box>
+
+        <brls:RecyclerFrame
+            id="details/recycler"
+            height="0"
+            grow="1"
+            width="100%"/>
+    </brls:Box>
+
+</brls:Box>

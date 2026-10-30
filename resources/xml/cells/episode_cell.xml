@@ -1,0 +1,44 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    axis="row"
+    alignItems="center"
+    focusable="true"
+    cornerRadius="12"
+    backgroundColor="@theme/nuvio/card"
+    marginBottom="10"
+    padding="10">
+
+    <brls:Image
+        id="episode/thumbnail"
+        width="160"
+        height="90"
+        cornerRadius="8"
+        scalingType="fill"
+        marginRight="16"/>
+
+    <brls:Box
+        width="auto"
+        height="auto"
+        grow="1"
+        axis="column">
+
+        <brls:Label
+            id="episode/title"
+            fontSize="18"
+            singleLine="true"
+            marginBottom="4"/>
+
+        <brls:Label
+            id="episode/date"
+            fontSize="14"
+            textColor="@theme/brls/text_disabled"
+            marginBottom="4"/>
+
+        <brls:Label
+            id="episode/overview"
+            fontSize="14"
+            textColor="@theme/brls/text_disabled"/>
+    </brls:Box>
+
+</brls:Box>
