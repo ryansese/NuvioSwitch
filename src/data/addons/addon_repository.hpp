@@ -44,6 +44,9 @@ class AddonRepository
         std::shared_ptr<core::storage::Store> addons;        // per profile
         std::shared_ptr<core::storage::Store> manifestCache; // global
         Clock now;                                           // defaults to cache::unixNow
+        // Installed at the end of the list on every start when missing (a local development aid:
+        // main.cpp fills it from the git-ignored resources/local_addons.txt).
+        std::vector<std::string> extraUrls;
     };
 
     enum class InstallStatus

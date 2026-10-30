@@ -25,6 +25,7 @@ struct PlaybackRequest
     std::optional<int64_t> videoSize;
     std::string addonName;
     std::string streamName; // the card's heading
+    std::optional<int64_t> startPositionMs; // where to start; NuvioSwitch-0009 supplies the resume point
 
     std::string contentType;
     std::string contentId;

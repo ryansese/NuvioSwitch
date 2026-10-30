@@ -40,8 +40,9 @@ jobs:
           submodules: recursive
 
       - name: Install dependencies
-        # libwebp for metahub's WebP posters; curl comes with macOS
-        run: brew install webp pkgconf
+        # libwebp for metahub's WebP posters, mpv for playback; curl comes with macOS.
+        # The Switch job needs nothing extra: the devkitPro image ships the switch-libmpv portlib.
+        run: brew install webp pkgconf mpv
 
       - name: Configure
         run: cmake -B build_desktop -DPLATFORM_DESKTOP=ON -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_BUILD_TYPE=Release

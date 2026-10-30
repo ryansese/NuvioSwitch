@@ -86,5 +86,19 @@
     "retry": "Retry",
     "back": "Back",
     "player_soon": "Playback arrives in a later update."
+  },
+  "player": {
+    "pause": "Pause",
+    "play": "Play",
+    "paused": "Paused",
+    "subtitles": "Subtitles",
+    "audio": "Audio",
+    "sources": "Sources",
+    "off": "Off",
+    "track": "Track {}",
+    "error": "Couldn't play this stream",
+    "try_another": "Try another stream",
+    "back": "Back",
+    "no_video": "The video output couldn't be started"
   }
 }

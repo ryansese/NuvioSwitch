@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <curl/curl.h>
+#include <fstream>
 #include <memory>
 
 #include "activity/main_activity.hpp"
@@ -14,12 +15,16 @@
 #include "core/storage/paths.hpp"
 #include "core/storage/store.hpp"
 #include "data/addons/addon_repository.hpp"
+#include "data/addons/addon_url.hpp"
 #include "data/catalog/catalog_repository.hpp"
 #include "data/meta/meta_repository.hpp"
+#include "data/player/subtitle_repository.hpp"
 #include "data/streams/stream_repository.hpp"
+#include "domain/playback_request.hpp"
 #include "tabs/placeholder_tab.hpp"
 #include "ui/addons/addons_tab.hpp"
 #include "ui/home/home_tab.hpp"
+#include "ui/navigation.hpp"
 #include "ui/search/search_tab.hpp"
 #include "version.hpp"
 
@@ -43,6 +48,24 @@ static void applyNuvioTheme()
     dark.addColor("brls/highlight/color2", nvgRGB(0xFF, 0xFF, 0xFF));
     dark.addColor("brls/highlight/background", nvgRGB(0x30, 0x30, 0x30));
     dark.addColor("nuvio/card", nvgRGB(0x24, 0x24, 0x24));
+}
+
+// Add-ons to install on every start, one URL per line, from the git-ignored resources/local_addons.txt
+// (bundled into romfs on Switch). A development aid for add-ons whose URLs hold secrets.
+static std::vector<std::string> localAddonUrls()
+{
+#ifdef __SWITCH__
+    const char* path = "romfs:/local_addons.txt";
+#else
+    const char* path = "resources/local_addons.txt";
+#endif
+    std::vector<std::string> out;
+    std::ifstream in(path);
+    std::string line;
+    while (std::getline(in, line))
+        if (auto url = nuvio::data::addons::normalizeInstallInput(line))
+            out.push_back(*url);
+    return out;
 }
 
 static void routeCoreLogging()
@@ -120,7 +143,8 @@ int main(int argc, char* argv[])
 
     // add-ons: cached manifests are shown at once, missing and stale ones fetched in the background
     auto addons = std::make_unique<AddonRepository>(AddonRepository::Config{http.get(),
-        storage::Store::open("addons"), storage::Store::open("addon_manifest_cache", storage::Scope::Global)});
+        storage::Store::open("addons"), storage::Store::open("addon_manifest_cache", storage::Scope::Global), {},
+        localAddonUrls()});
     AddonRepository::setShared(addons.get());
     addons->start();
 
@@ -133,6 +157,10 @@ int main(int argc, char* argv[])
     auto streams = std::make_unique<nuvio::data::streams::StreamRepository>(
         nuvio::data::streams::StreamRepository::Config{http.get()});
     nuvio::data::streams::StreamRepository::setShared(streams.get());
+
+    auto subtitles = std::make_unique<nuvio::data::player::SubtitleRepository>(
+        nuvio::data::player::SubtitleRepository::Config{http.get()});
+    nuvio::data::player::SubtitleRepository::setShared(subtitles.get());
 
     applyNuvioTheme();
     brls::Application::getPlatform()->setThemeVariant(brls::ThemeVariant::DARK);
@@ -147,6 +175,19 @@ int main(int argc, char* argv[])
 
     brls::Application::pushActivity(new MainActivity());
 
+    // development aid: NUVIOSWITCH_PLAY=<url or file> opens the player on it at startup (NUVIOSWITCH_PLAY_ID sets the IMDb ID subtitles are asked for)
+    if (const char* play = std::getenv("NUVIOSWITCH_PLAY"))
+    {
+        nuvio::domain::PlaybackRequest request;
+        request.url         = play;
+        request.title       = "Debug stream";
+        request.contentType = "movie";
+        request.videoId     = std::getenv("NUVIOSWITCH_PLAY_ID") ? std::getenv("NUVIOSWITCH_PLAY_ID") : "debug";
+        request.contentId   = request.videoId;
+        request.addonName   = "debug";
+        nuvio::ui::openPlayer(request);
+    }
+
 #ifdef NUVIO_DEBUG_NETWORK
     probeHttps();
 #endif
@@ -155,6 +196,8 @@ int main(int argc, char* argv[])
         ;
 
     // stop workers before the curl share and global state they use go away
+    nuvio::data::player::SubtitleRepository::setShared(nullptr);
+    subtitles.reset();
     nuvio::data::streams::StreamRepository::setShared(nullptr);
     streams.reset();
     nuvio::data::meta::MetaRepository::setShared(nullptr);

@@ -1,0 +1,161 @@
+<brls:Box
+    width="100%"
+    height="100%"
+    axis="column"
+    backgroundColor="#000000"
+    focusable="true">
+
+    <!-- the video view goes in front of everything in code; these are drawn over it -->
+
+    <!-- loading and buffering -->
+    <brls:Box
+        id="player/loading"
+        positionType="absolute"
+        positionTop="0"
+        positionLeft="0"
+        positionRight="0"
+        positionBottom="0"
+        alignItems="center"
+        justifyContent="center">
+
+        <brls:ProgressSpinner id="player/spinner"/>
+    </brls:Box>
+
+    <brls:Label
+        id="player/pausedLabel"
+        positionType="absolute"
+        positionTop="32"
+        positionRight="48"
+        fontSize="22"
+        text="@i18n/app/player/paused"
+        visibility="gone"/>
+
+    <!-- controls -->
+    <brls:Box
+        id="player/controls"
+        positionType="absolute"
+        positionLeft="0"
+        positionRight="0"
+        positionBottom="0"
+        height="auto"
+        axis="column"
+        backgroundColor="#B3000000"
+        paddingTop="40"
+        paddingLeft="48"
+        paddingRight="48"
+        paddingBottom="28"
+        visibility="gone">
+
+        <brls:Label
+            id="player/title"
+            fontSize="28"
+            singleLine="true"
+            marginBottom="4"/>
+
+        <brls:Label
+            id="player/episode"
+            fontSize="18"
+            singleLine="true"
+            textColor="@theme/brls/text_disabled"
+            marginBottom="10"/>
+
+        <brls:Box
+            id="player/seekHolder"
+            width="100%"
+            height="auto"/>
+
+        <brls:Box
+            width="100%"
+            height="auto"
+            axis="row"
+            justifyContent="spaceBetween"
+            marginBottom="12">
+
+            <brls:Label id="player/elapsed" fontSize="16"/>
+            <brls:Label id="player/remaining" fontSize="16"/>
+        </brls:Box>
+
+        <brls:Box
+            id="player/buttons"
+            width="100%"
+            height="auto"
+            axis="row"
+            justifyContent="center">
+
+            <brls:Button id="player/play" text="@i18n/app/player/pause" marginRight="12"/>
+            <brls:Button id="player/subtitles" text="@i18n/app/player/subtitles" marginRight="12"/>
+            <brls:Button id="player/audio" text="@i18n/app/player/audio" marginRight="12"/>
+            <brls:Button id="player/sources" text="@i18n/app/player/sources"/>
+        </brls:Box>
+    </brls:Box>
+
+    <!-- audio and subtitle choices -->
+    <brls:Box
+        id="player/panel"
+        positionType="absolute"
+        positionTop="0"
+        positionRight="0"
+        positionBottom="0"
+        width="360"
+        axis="column"
+        backgroundColor="#E61A1A1A"
+        paddingTop="28"
+        paddingLeft="20"
+        paddingRight="20"
+        paddingBottom="20"
+        visibility="gone">
+
+        <brls:Label
+            id="player/panelTitle"
+            fontSize="24"
+            marginBottom="14"/>
+
+        <brls:ScrollingFrame
+            id="player/panelScroll"
+            width="100%"
+            height="0"
+            grow="1">
+
+            <brls:Box
+                id="player/panelList"
+                axis="column"/>
+        </brls:ScrollingFrame>
+    </brls:Box>
+
+    <!-- load failure -->
+    <brls:Box
+        id="player/error"
+        positionType="absolute"
+        positionTop="0"
+        positionLeft="0"
+        positionRight="0"
+        positionBottom="0"
+        axis="column"
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor="#F2000000"
+        visibility="gone">
+
+        <brls:Label
+            fontSize="26"
+            text="@i18n/app/player/error"
+            marginBottom="10"/>
+
+        <brls:Label
+            id="player/errorReason"
+            fontSize="16"
+            maxWidth="800"
+            textColor="@theme/brls/text_disabled"
+            marginBottom="26"/>
+
+        <brls:Button
+            id="player/errorOther"
+            text="@i18n/app/player/try_another"
+            marginBottom="10"/>
+
+        <brls:Button
+            id="player/errorBack"
+            text="@i18n/app/player/back"/>
+    </brls:Box>
+
+</brls:Box>

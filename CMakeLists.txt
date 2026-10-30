@@ -56,6 +56,20 @@ endif ()
 pkg_check_modules(WEBP REQUIRED IMPORTED_TARGET libwebp)
 list(APPEND APP_PLATFORM_LIB PkgConfig::WEBP)
 
+# libmpv: Homebrew mpv on macOS, the switch-libmpv portlib (with its static dependencies) on Switch
+pkg_check_modules(MPV IMPORTED_TARGET mpv)
+if (NOT MPV_FOUND)
+    message(FATAL_ERROR
+        "libmpv not found. On macOS run: brew install mpv. "
+        "On Switch it comes with the devkitPro portlibs: dkp-pacman -S switch-libmpv")
+endif ()
+if (PLATFORM_SWITCH)
+    list(APPEND APP_PLATFORM_LIB ${MPV_STATIC_LDFLAGS})
+    list(APPEND APP_PLATFORM_INCLUDE ${MPV_STATIC_INCLUDE_DIRS})
+else ()
+    list(APPEND APP_PLATFORM_LIB PkgConfig::MPV)
+endif ()
+
 # nlohmann/json, bundled with borealis
 set(NLOHMANN_INCLUDE ${BOREALIS_LIBRARY}/include/borealis/extern)
 

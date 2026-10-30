@@ -18,8 +18,7 @@ void openDetails(const domain::MetaPreview& item, const std::string& sourceAddon
 // The stream picker for a video: every add-on that serves it, grouped, with the chosen stream going to the player.
 void openStreams(const domain::StreamRequest& request);
 
-// The player for a stream. Until the player (NuvioSwitch-0008) lands, this logs the request and
-// tells the user it's coming.
+// The player for a stream; B returns to the stream picker underneath.
 void openPlayer(const domain::PlaybackRequest& request);
 
 // Every item of a catalog in a paged grid, starting from what row already holds.

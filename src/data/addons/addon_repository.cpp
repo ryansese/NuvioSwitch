@@ -146,7 +146,18 @@ void AddonRepository::loadInstallState()
     for (const auto& url : urls)
         enabledStates.emplace(url, true);
 
-    if (!stored.is_array())
+    bool added = false;
+    for (const auto& extra : config.extraUrls)
+    {
+        std::string url = canonicalize(extra);
+        if (url.empty() || indexOf(url))
+            continue;
+        urls.push_back(url);
+        enabledStates.emplace(url, true);
+        added = true;
+    }
+
+    if (!stored.is_array() || added)
         saveInstallState();
 }
 

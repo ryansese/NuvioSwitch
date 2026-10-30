@@ -116,9 +116,10 @@ struct Harness
     }
 
     // A repository over the stores as they are on disk now, like a fresh app launch.
-    std::unique_ptr<AddonRepository> launch()
+    std::unique_ptr<AddonRepository> launch(std::vector<std::string> extraUrls = {})
     {
         AddonRepository::Config config;
+        config.extraUrls     = std::move(extraUrls);
         config.http          = http.get();
         config.addons        = store("addons");
         config.manifestCache = store("addon_manifest_cache");
@@ -200,6 +201,31 @@ TEST_CASE("First launch installs Cinemeta then OpenSubtitles, enabled, and saves
         CHECK(request.permissiveTls);
         CHECK(request.cachePolicy == core::net::CachePolicy::NoCache);
     }
+}
+
+TEST_CASE("Extra URLs are added at the end when missing, once, and saved")
+{
+    Harness h;
+    const std::string extra = "https://extra.example/cfg";
+    {
+        auto repo = h.launch();
+        repo->start();
+        h.settle(*repo);
+    }
+    // an existing install gets it on the next start
+    {
+        auto repo = h.launch({extra + "/manifest.json", CINEMETA});
+        repo->start();
+        REQUIRE(repo->addons().size() == 3);
+        CHECK(repo->addons()[2].baseUrl == extra);
+        CHECK(repo->addons()[2].enabled);
+    }
+    auto stored = h.store("addons");
+    CHECK(stored->get("installed_addon_urls_ordered") == Json{CINEMETA, OPENSUBTITLES, extra});
+    // starting again does not duplicate it
+    auto repo = h.launch({extra});
+    repo->start();
+    CHECK(repo->addons().size() == 3);
 }
 
 TEST_CASE("Removing every add-on survives a restart; defaults are not re-added")

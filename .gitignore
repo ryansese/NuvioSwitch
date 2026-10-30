@@ -8,6 +8,7 @@ cmake-build-*/
 
 # Local configuration (secrets, endpoints)
 config.local.json
+resources/local_addons.txt
 
 # Editors and OS
 .idea/
