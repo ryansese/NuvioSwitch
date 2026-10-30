@@ -10,7 +10,7 @@
         </brls:Tab>
 
         <brls:Tab label="@i18n/app/tabs/search">
-            <PlaceholderTab titleKey="app/tabs/search" noteKey="app/placeholder/search"/>
+            <SearchTab/>
         </brls:Tab>
 
         <brls:Tab label="@i18n/app/tabs/library">

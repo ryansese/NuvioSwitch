@@ -19,6 +19,7 @@
 #include "tabs/placeholder_tab.hpp"
 #include "ui/addons/addons_tab.hpp"
 #include "ui/home/home_tab.hpp"
+#include "ui/search/search_tab.hpp"
 #include "version.hpp"
 
 using namespace nuvio::core;
@@ -137,6 +138,7 @@ int main(int argc, char* argv[])
     brls::Application::registerXMLView("PlaceholderTab", PlaceholderTab::create);
     brls::Application::registerXMLView("AddonsTab", AddonsTab::create);
     brls::Application::registerXMLView("HomeTab", HomeTab::create);
+    brls::Application::registerXMLView("SearchTab", SearchTab::create);
 
     brls::Application::pushActivity(new MainActivity());
 

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "core/net/http_types.hpp"
+#include "data/catalog/catalog_url.hpp"
 #include "domain/catalog_row.hpp"
 
 class PosterCell;
@@ -13,6 +14,7 @@ class PosterCell;
 // horizontal scroller and a trailing "See all" card while more pages exist.
 // It starts pending (a placeholder of the final height) until load() is called;
 // focus on one of the last 5 items loads the next page. Y opens See all.
+// Search results use the same view with Options.
 class CatalogRowView : public brls::Box
 {
   public:
@@ -24,11 +26,20 @@ class CatalogRowView : public brls::Box
         Failed, // hidden
     };
 
+    // How the row differs from a Home row. Search results ask with search=<query>, stay on
+    // the first page and have no See all, which would need the query as well.
+    struct Options
+    {
+        nuvio::data::catalog::Extras extras;
+        bool firstPageOnly = false;
+    };
+
     static constexpr size_t MAX_ITEMS     = 200; // no load-more past this; See all goes further
     static constexpr size_t LOAD_MORE_AT  = 5;
     static constexpr float PENDING_HEIGHT = 280;
 
     CatalogRowView(const nuvio::domain::CatalogSource& source, const std::string& title);
+    CatalogRowView(const nuvio::domain::CatalogSource& source, const std::string& title, Options options);
     ~CatalogRowView() override;
 
     // Requests the first page, unless it already loaded or is loading.
@@ -54,6 +65,7 @@ class CatalogRowView : public brls::Box
     void updateSeeAll();
 
     nuvio::domain::CatalogRow row;
+    Options options;
     State state   = State::Pending;
     bool released = false;
     bool loadingMore = false;

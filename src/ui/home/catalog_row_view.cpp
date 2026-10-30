@@ -12,6 +12,12 @@ using nuvio::data::catalog::CatalogRepository;
 using namespace nuvio::domain;
 
 CatalogRowView::CatalogRowView(const CatalogSource& source, const std::string& title)
+    : CatalogRowView(source, title, Options())
+{
+}
+
+CatalogRowView::CatalogRowView(const CatalogSource& source, const std::string& title, Options options)
+    : options(std::move(options))
 {
     row.source = source;
 
@@ -52,13 +58,14 @@ CatalogRowView::CatalogRowView(const CatalogSource& source, const std::string& t
     this->addView(scroller);
 
     // Y anywhere in the row opens See all, the row's option next to the trailing card
-    this->registerAction("app/home/see_all"_i18n, brls::ControllerButton::BUTTON_Y, [this](brls::View*)
-        {
-            if (state != State::Loaded)
-                return false;
-            nuvio::ui::openSeeAll(row);
-            return true;
-        });
+    if (!this->options.firstPageOnly)
+        this->registerAction("app/home/see_all"_i18n, brls::ControllerButton::BUTTON_Y, [this](brls::View*)
+            {
+                if (state != State::Loaded)
+                    return false;
+                nuvio::ui::openSeeAll(row);
+                return true;
+            });
 }
 
 CatalogRowView::~CatalogRowView()
@@ -89,7 +96,7 @@ void CatalogRowView::show(const CatalogRow& loaded)
 
 void CatalogRowView::requestPage(int skip)
 {
-    request = CatalogRepository::shared().load(row.source, skip, {},
+    request = CatalogRepository::shared().load(row.source, skip, options.extras,
         [this, first = skip == 0](CatalogRepository::Result result)
         {
             if (!result.ok)
@@ -137,7 +144,7 @@ void CatalogRowView::applyPage(CatalogPage page, bool first)
     }
     row.nextSkip = page.nextSkip;
     // whole pages are kept, so See all can carry on from nextSkip past the row's cap
-    row.hasMore = page.hasMore;
+    row.hasMore = page.hasMore && !options.firstPageOnly;
     loadingMore  = false;
 
     if (first)

@@ -9,7 +9,6 @@
     "settings": "Settings"
   },
   "placeholder": {
-    "search": "Search across your add-ons' catalogs.",
     "library": "Your saved titles and watch progress.",
     "settings": "Playback, appearance and account settings."
   },
@@ -52,6 +51,16 @@
     "error": "Couldn't load any catalogs. Check your connection.",
     "retry": "Retry",
     "page_failed": "Couldn't load more: {}"
+  },
+  "search": {
+    "hint": "Search movies and shows",
+    "keyboard_title": "Search",
+    "recent": "Recent searches",
+    "remove": "Remove",
+    "clear_all": "Clear all",
+    "clear_query": "Clear",
+    "no_support": "No installed add-on supports search",
+    "no_results": "No results for \"{}\""
   },
   "details": {
     "play": "Play",

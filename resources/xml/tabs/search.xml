@@ -1,0 +1,14 @@
+<brls:Box
+    width="auto"
+    height="auto"
+    grow="1"
+    axis="column">
+
+    <!-- the query field, messages, recent searches and result rows are added in code -->
+    <brls:ScrollingFrame
+        id="search/scroll"
+        width="auto"
+        height="auto"
+        grow="1"/>
+
+</brls:Box>
