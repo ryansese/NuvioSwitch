@@ -1,0 +1,43 @@
+<brls:Box
+    width="100%"
+    height="auto"
+    axis="column"
+    focusable="true"
+    cornerRadius="12"
+    backgroundColor="@theme/nuvio/card"
+    marginBottom="10"
+    padding="14">
+
+    <brls:Box
+        width="100%"
+        height="auto"
+        axis="row"
+        alignItems="center"
+        marginBottom="4">
+
+        <brls:Label
+            id="stream/name"
+            fontSize="18"
+            grow="1"
+            singleLine="true"/>
+
+        <brls:Label
+            id="stream/badge"
+            fontSize="14"
+            marginLeft="12"
+            textColor="@theme/brls/text_disabled"
+            visibility="gone"/>
+    </brls:Box>
+
+    <brls:Label
+        id="stream/description"
+        fontSize="14"
+        marginBottom="6"
+        textColor="@theme/brls/text_disabled"/>
+
+    <brls:Label
+        id="stream/meta"
+        fontSize="13"
+        singleLine="true"
+        textColor="@theme/brls/text_disabled"/>
+</brls:Box>

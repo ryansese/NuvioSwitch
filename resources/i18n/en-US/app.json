@@ -69,7 +69,22 @@
     "season": "Season {}",
     "specials": "Specials",
     "director": "Director: {}",
-    "cast": "Cast: {}",
-    "streams_soon": "Stream selection arrives in a later update."
+    "cast": "Cast: {}"
+  },
+  "streams": {
+    "all": "All",
+    "loading": "Loading streams…",
+    "still_loading": "Still loading from other add-ons…",
+    "unknown": "Unknown stream",
+    "needs_debrid": "Needs debrid",
+    "unsupported": "Unsupported",
+    "needs_debrid_message": "This is a torrent stream. Playing it needs a debrid service, which isn't available yet.",
+    "unsupported_message": "This stream opens in a web page or YouTube, which NuvioSwitch can't play.",
+    "no_addon": "No add-on provides streams for this title",
+    "none_found": "No streams found",
+    "tried": "Asked: {}",
+    "retry": "Retry",
+    "back": "Back",
+    "player_soon": "Playback arrives in a later update."
   }
 }

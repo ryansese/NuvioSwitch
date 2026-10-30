@@ -4,6 +4,7 @@
 
 #include "domain/catalog_row.hpp"
 #include "domain/meta_preview.hpp"
+#include "domain/playback_request.hpp"
 #include "domain/stream_request.hpp"
 
 // Screens other features open. Each is pushed on top of the shell, and B returns
@@ -14,9 +15,12 @@ namespace nuvio::ui
 // The item's metadata, seasons and episodes, with Play.
 void openDetails(const domain::MetaPreview& item, const std::string& sourceAddonName);
 
-// The stream picker for a video. Until the picker (NuvioSwitch-0007) lands, this only
-// tells the user it's coming.
+// The stream picker for a video: every add-on that serves it, grouped, with the chosen stream going to the player.
 void openStreams(const domain::StreamRequest& request);
+
+// The player for a stream. Until the player (NuvioSwitch-0008) lands, this logs the request and
+// tells the user it's coming.
+void openPlayer(const domain::PlaybackRequest& request);
 
 // Every item of a catalog in a paged grid, starting from what row already holds.
 void openSeeAll(const domain::CatalogRow& row);

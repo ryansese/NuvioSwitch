@@ -1,0 +1,130 @@
+<!-- height is auto: the applet frame grows it to the space between header and footer -->
+<brls:Box
+    width="100%"
+    height="auto"
+    axis="row">
+
+    <brls:Image
+        id="streams/backdrop"
+        positionType="absolute"
+        positionTop="0"
+        positionLeft="0"
+        positionRight="0"
+        positionBottom="0"
+        scalingType="fill"
+        alpha="0.5"/>
+
+    <!-- title, episode and loading progress -->
+    <brls:Box
+        id="streams/info"
+        width="40%"
+        height="auto"
+        axis="column"
+        paddingTop="32"
+        paddingLeft="48"
+        paddingRight="32">
+
+        <brls:Image
+            id="streams/logo"
+            maxWidth="360"
+            height="100"
+            scalingType="fit"
+            marginBottom="16"/>
+
+        <brls:Label
+            id="streams/title"
+            fontSize="32"
+            marginBottom="10"/>
+
+        <brls:Label
+            id="streams/episode"
+            fontSize="18"
+            textColor="@theme/brls/text_disabled"
+            marginBottom="24"/>
+
+        <brls:Box
+            id="streams/progress"
+            width="100%"
+            height="auto"
+            axis="row"
+            alignItems="center">
+
+            <brls:ProgressSpinner
+                id="streams/spinner"
+                marginRight="14"/>
+
+            <brls:Label
+                id="streams/progressText"
+                fontSize="16"
+                grow="1"
+                textColor="@theme/brls/text_disabled"/>
+        </brls:Box>
+    </brls:Box>
+
+    <!-- add-on chips and the stream list -->
+    <brls:Box
+        id="streams/results"
+        grow="1"
+        height="auto"
+        axis="column"
+        paddingTop="24"
+        paddingRight="48">
+
+        <!-- the chips slide inside this clipped box, as the season tabs do on the details screen -->
+        <brls:Box
+            id="streams/chipScroll"
+            width="100%"
+            height="60"
+            clipsToBounds="true"
+            marginBottom="8"
+            visibility="gone">
+
+            <brls:Box
+                id="streams/chips"
+                axis="row"
+                shrink="0"
+                alignItems="center"
+                paddingTop="6"
+                paddingBottom="6"
+                paddingLeft="6"/>
+        </brls:Box>
+
+        <brls:ScrollingFrame
+            id="streams/scroll"
+            width="100%"
+            height="0"
+            grow="1"/>
+
+        <!-- no add-on, or nothing found -->
+        <brls:Box
+            id="streams/status"
+            width="100%"
+            height="auto"
+            grow="1"
+            axis="column"
+            alignItems="center"
+            justifyContent="center"
+            visibility="gone">
+
+            <brls:Label
+                id="streams/message"
+                fontSize="22"
+                marginBottom="10"/>
+
+            <brls:Label
+                id="streams/detail"
+                fontSize="16"
+                textColor="@theme/brls/text_disabled"
+                marginBottom="24"/>
+
+            <brls:Button
+                id="streams/retry"
+                text="@i18n/app/streams/retry"/>
+
+            <brls:Button
+                id="streams/back"
+                text="@i18n/app/streams/back"/>
+        </brls:Box>
+    </brls:Box>
+
+</brls:Box>
