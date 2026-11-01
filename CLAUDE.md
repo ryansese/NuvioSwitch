@@ -23,8 +23,8 @@ ctest --test-dir build_desktop --output-on-failure
 docker run --rm -v "$PWD":/src -w /src devkitpro/devkita64:20260219 bash -c \
   'cmake -B build_switch -DPLATFORM_SWITCH=ON -DCMAKE_BUILD_TYPE=Release -DNUVIO_NXLINK_LOG=ON && cmake --build build_switch --target NuvioSwitch.nro -j2'
 
-# Send to a console running the homebrew menu's netloader; -s keeps listening for logs, -a "-d" adds debug lines
-nxlink -s build_switch/NuvioSwitch.nro -a "-d"
+# Send to a console running the homebrew menu's netloader; -s keeps listening for logs, --args -d adds debug lines; run nxlink on the host, not in Docker (the console must reach the host to send logs back)
+nxlink -a <switch-ip> -s build_switch/NuvioSwitch.nro --args -d
 ```
 
 - `nxlink -s` shows no logs unless the build used `-DNUVIO_NXLINK_LOG=ON`: borealis calls `nxlinkStdio()` only under `#ifdef DEBUG`, which nothing else defines. The option is off by default (and in CI) because it adds a startup wait when no nxlink server is listening.
