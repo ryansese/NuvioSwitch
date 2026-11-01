@@ -75,6 +75,8 @@ set(NLOHMANN_INCLUDE ${BOREALIS_LIBRARY}/include/borealis/extern)
 
 # temporary network checks: a row of Cinemeta posters on Home and an HTTPS request at startup
 option(NUVIO_DEBUG_NETWORK "Log an HTTPS check at startup" OFF)
+# borealis only calls nxlinkStdio() under #ifdef DEBUG, so without this `nxlink -s` receives no logs
+option(NUVIO_NXLINK_LOG "Switch: send stdout/stderr to nxlink -s (adds a startup wait with no listener)" OFF)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/version.hpp.in ${CMAKE_BINARY_DIR}/generated/version.hpp @ONLY)
 
@@ -82,6 +84,11 @@ file(GLOB_RECURSE MAIN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 if (PLATFORM_SWITCH)
     list(APPEND MAIN_SRC ${BOREALIS_LIBRARY}/lib/platforms/switch/switch_wrapper.c)
+    if (NUVIO_NXLINK_LOG)
+        # scoped to this one file so no other #ifdef DEBUG path turns on
+        set_source_files_properties(${BOREALIS_LIBRARY}/lib/platforms/switch/switch_wrapper.c
+            PROPERTIES COMPILE_DEFINITIONS DEBUG)
+    endif ()
 endif ()
 
 program_target(${PROJECT_NAME} "${MAIN_SRC}")

@@ -21,11 +21,13 @@ ctest --test-dir build_desktop --output-on-failure
 
 # Switch, without a local devkitPro install (same image CI pins)
 docker run --rm -v "$PWD":/src -w /src devkitpro/devkita64:20260219 bash -c \
-  'cmake -B build_switch -DPLATFORM_SWITCH=ON -DCMAKE_BUILD_TYPE=Release && cmake --build build_switch --target NuvioSwitch.nro -j2'
+  'cmake -B build_switch -DPLATFORM_SWITCH=ON -DCMAKE_BUILD_TYPE=Release -DNUVIO_NXLINK_LOG=ON && cmake --build build_switch --target NuvioSwitch.nro -j2'
 
-# Send to a console running the homebrew menu's netloader
-nxlink -s build_switch/NuvioSwitch.nro
+# Send to a console running the homebrew menu's netloader; -s keeps listening for logs, -a "-d" adds debug lines
+nxlink -s build_switch/NuvioSwitch.nro -a "-d"
 ```
+
+- `nxlink -s` shows no logs unless the build used `-DNUVIO_NXLINK_LOG=ON`: borealis calls `nxlinkStdio()` only under `#ifdef DEBUG`, which nothing else defines. The option is off by default (and in CI) because it adds a startup wait when no nxlink server is listening.
 
 - Keep Switch builds at `-j2` in Docker: higher parallelism runs the compiler out of memory on borealis sources.
 - CMake 4 rejects projects declaring a minimum below 3.5, so fetched dependencies whose CMakeLists are old (doctest) are used header-only via `SOURCE_SUBDIR`.
