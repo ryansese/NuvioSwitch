@@ -19,8 +19,9 @@ cmake --build build_desktop -j
 (cd build_desktop && ./NuvioSwitch)          # -d debug logging, -v debug view
 ctest --test-dir build_desktop --output-on-failure
 
-# Switch, without a local devkitPro install (same image CI pins)
-docker run --rm -v "$PWD":/src -w /src devkitpro/devkita64:20260219 bash -c \
+# Switch, without a local devkitPro install: the image CI pins, plus ffmpeg rebuilt for https (build the image once)
+docker build -t nuvioswitch-build tools/switch-ffmpeg
+docker run --rm -v "$PWD":/src -w /src nuvioswitch-build bash -c \
   'cmake -B build_switch -DPLATFORM_SWITCH=ON -DCMAKE_BUILD_TYPE=Release -DNUVIO_NXLINK_LOG=ON && cmake --build build_switch --target NuvioSwitch.nro -j2'
 
 # Send to a console running the homebrew menu's netloader; -s keeps listening for logs, --args -d adds debug lines; run nxlink on the host, not in Docker (the console must reach the host to send logs back)
@@ -29,10 +30,11 @@ nxlink -a <switch-ip> -s build_switch/NuvioSwitch.nro --args -d
 
 - `nxlink -s` shows no logs unless the build used `-DNUVIO_NXLINK_LOG=ON`: borealis calls `nxlinkStdio()` only under `#ifdef DEBUG`, which nothing else defines. The option is off by default (and in CI) because it adds a startup wait when no nxlink server is listening.
 
+- The stock `switch-ffmpeg` (7.1-5) has no `https` protocol, so mpv fails every https stream with "No protocol handler found". `tools/switch-ffmpeg/build.sh` rebuilds it from devkitPro's recipe with mbedTLS and `https` and installs it over the stock one; the `nuvioswitch-build` image and the CI Switch job both run it. Media TLS is verified against `resources/cacert.pem` (Mozilla's bundle from https://curl.se/ca/cacert.pem; refresh it now and then). A `build_switch` configured against the stock ffmpeg keeps its cached link flags: reconfigure with `cmake -U "MPV*" -B build_switch ...` or the link fails on `mbedtls_*` symbols.
 - Keep Switch builds at `-j2` in Docker: higher parallelism runs the compiler out of memory on borealis sources.
 - CMake 4 rejects projects declaring a minimum below 3.5, so fetched dependencies whose CMakeLists are old (doctest) are used header-only via `SOURCE_SUBDIR`.
 - On desktop, Escape is B and Enter is A (borealis keyboard mapping). + (Start) quits because `main.cpp` enables borealis's global quit, which is off by default.
-- Desktop needs Homebrew `webp`, `pkgconf` and `mpv` (`brew install webp pkgconf mpv`); curl is the macOS system one. The Switch image already has `switch-curl`, `switch-libwebp` and `switch-libmpv` (0.39, with ffmpeg 7.1; linked statically through its pkg-config file, which makes the `.nro` about 32 MB). Whether that stock build can decode 1080p smoothly on hardware is still to be benchmarked (NuvioSwitch-0008 task 1.1).
+- Desktop needs Homebrew `webp`, `pkgconf` and `mpv` (`brew install webp pkgconf mpv`); curl is the macOS system one. The Switch image already has `switch-curl`, `switch-libwebp` and `switch-libmpv` (0.39, with ffmpeg 7.1; linked statically through its pkg-config file, which makes the `.nro` about 35 MB). That libmpv with the https-rebuilt ffmpeg is the chosen Switch build: it was verified on hardware, handheld and docked, at 720p and 1080p (NuvioSwitch-0008).
 - `-DNUVIO_DEBUG_NETWORK=ON` logs an HTTPS check at startup. `NUVIOSWITCH_PLAY=<url or file>` opens the player on it at startup (desktop testing; a local file works).
 - `resources/local_addons.txt` (git-ignored; one add-on URL per line) lists add-ons installed at the end of the list on every start when missing, for development add-ons whose URLs hold secrets (a debrid token). It is bundled into the `.nro`'s romfs, so don't share a `.nro` built with one. Removing such an add-on in the app doesn't stick: it comes back on the next start.
 - borealis logs to stdout, which is fully buffered when redirected and lost if the app is killed; capture runs with `stdbuf -oL ./NuvioSwitch -d > run.log`.
@@ -51,7 +53,7 @@ nxlink -a <switch-ip> -s build_switch/NuvioSwitch.nro --args -d
   - `net/`: `HttpClient` (worker pool, `Cache-Control` disk cache, results on the UI thread), `CurlExecutor`, NuvioTV's default headers.
   - `storage/`: `Paths` (data folder: `sdmc:/switch/NuvioSwitch/`, `~/Library/Application Support/NuvioSwitch/`, or `NUVIOSWITCH_DATA_DIR`) and `Store`, the per-profile JSON key-value files with atomic writes.
   - `image/`: `ImageLoader` for borealis `Image` views, memory and disk caches, WebP decoding.
-- `resources/`: `xml/` layouts, `i18n/en-US/app.json` (strings are read as `app/...`), `img/` (`icon.jpg` is the 256×256 `.nro` icon), `icon/` (NuvioTV sidebar SVGs), plus `font/`, `material/` and `i18n/en-US/hints.json` copied from borealis because it needs them at runtime.
+- `resources/`: `xml/` layouts, `i18n/en-US/app.json` (strings are read as `app/...`), `img/` (`icon.jpg` is the 256×256 `.nro` icon), `icon/` (NuvioTV sidebar SVGs), plus `font/`, `material/` and `i18n/en-US/hints.json` copied from borealis because it needs them at runtime. `font/` also holds the fallback fonts `main.cpp` adds after the default font (`loadFallbackFonts`): monochrome Noto Emoji (add-ons put emoji and flags in stream text; NanoVG can't draw colour emoji, and Noto Emoji maps U+FE0F/U+200D to empty glyphs), Noto Sans Symbols 2, Thai and Armenian, static Regular instances under the OFL (`OFL-Noto.txt`). On Switch only borealis's `switch_font.ttf`/`switch_icons.ttf` are dropped from romfs, since the console's shared fonts replace them.
 - `tests/`: doctest cases; `test_main.cpp` provides `main`. `fixtures/` holds real add-on manifests, read with `readFixture()` from `test_util.hpp`.
 
 ## borealis (`library/borealis`)

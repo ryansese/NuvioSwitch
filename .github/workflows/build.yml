@@ -18,6 +18,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Rebuild ffmpeg with https
+        # the stock switch-ffmpeg has no https protocol, so mpv can't open https streams
+        run: tools/switch-ffmpeg/build.sh
+
       - name: Configure
         run: cmake -B build_switch -DPLATFORM_SWITCH=ON -DCMAKE_BUILD_TYPE=Release
 
@@ -41,7 +45,7 @@ jobs:
 
       - name: Install dependencies
         # libwebp for metahub's WebP posters, mpv for playback; curl comes with macOS.
-        # The Switch job needs nothing extra: the devkitPro image ships the switch-libmpv portlib.
+        # The Switch job uses the devkitPro image's switch-libmpv portlib, with ffmpeg rebuilt for https.
         run: brew install webp pkgconf mpv
 
       - name: Configure

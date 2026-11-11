@@ -61,8 +61,8 @@ std::string displayName(const domain::Stream& stream);
 // "description", else "title"; "" when neither.
 std::string displayDescription(const domain::Stream& stream);
 
-// The first lines of text, each trimmed, blanks dropped, at most maxLines.
-std::vector<std::string> descriptionLines(const std::string& text, size_t maxLines);
+// The lines of text, each trimmed, blanks dropped, at most maxLines (0: all of them).
+std::vector<std::string> descriptionLines(const std::string& text, size_t maxLines = 0);
 
 // "12.3 GB" from 1 GB up, "850 MB" below (1024-based); "" for zero or less.
 std::string formatSize(int64_t bytes);

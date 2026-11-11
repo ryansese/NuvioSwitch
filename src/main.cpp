@@ -50,6 +50,29 @@ static void applyNuvioTheme()
     dark.addColor("nuvio/card", nvgRGB(0x24, 0x24, 0x24));
 }
 
+// Fonts for what the console's shared fonts lack, chiefly the emoji add-ons put in stream names and descriptions
+// (🎥 📦 ⚡ 🌎, flags). NanoVG draws monochrome outlines only, so emoji come from the monochrome Noto Emoji, which also
+// maps U+FE0F and U+200D to empty glyphs instead of boxes. Fallbacks are tried in order, after the default font.
+static void loadFallbackFonts()
+{
+    static const char* const fonts[][2] = {
+        {"nuvio-emoji", "font/NotoEmoji-Regular.ttf"},
+        {"nuvio-symbols2", "font/NotoSansSymbols2-Regular.ttf"},
+        {"nuvio-thai", "font/NotoSansThai-Regular.ttf"},
+        {"nuvio-armenian", "font/NotoSansArmenian-Regular.ttf"},
+    };
+    NVGcontext* vg = brls::Application::getNVGContext();
+    int base       = brls::Application::getDefaultFont();
+    for (const auto& font : fonts)
+    {
+        std::string path = std::string(BRLS_RESOURCES) + font[1];
+        if (brls::Application::loadFontFromFile(font[0], path))
+            nvgAddFallbackFontId(vg, base, brls::Application::getFont(font[0]));
+        else
+            brls::Logger::warning("Fallback font missing: {}", path);
+    }
+}
+
 // Add-ons to install on every start, one URL per line, from the git-ignored resources/local_addons.txt
 // (bundled into romfs on Switch). A development aid for add-ons whose URLs hold secrets.
 static std::vector<std::string> localAddonUrls()
@@ -118,6 +141,8 @@ int main(int argc, char* argv[])
     }
 
     brls::Application::createWindow(NUVIO_APP_NAME);
+    // borealis loads its fonts in createWindow
+    loadFallbackFonts();
 
     routeCoreLogging();
     if (!storage::Paths::ensureCreated())

@@ -5,8 +5,6 @@
 using namespace brls::literals; // for _i18n
 using namespace nuvio::data::streams;
 
-// up to three lines of the description, as in NuvioTV's StreamCard
-static constexpr size_t DESCRIPTION_LINES = 3;
 // about a line and a half; longer lines wrap anyway
 static constexpr size_t LINE_LIMIT = 160;
 
@@ -28,8 +26,9 @@ void StreamCard::setStream(const nuvio::domain::Stream& value)
     std::string heading = displayName(stream);
     name->setText(heading.empty() ? "app/streams/unknown"_i18n : heading);
 
+    // every line, as NuvioTV's StreamCard: add-ons put languages and the file name on later lines
     std::string text;
-    for (const auto& line : descriptionLines(displayDescription(stream), DESCRIPTION_LINES))
+    for (const auto& line : descriptionLines(displayDescription(stream)))
         text += (text.empty() ? "" : "\n") + (line.size() > LINE_LIMIT ? line.substr(0, LINE_LIMIT) + "…" : line);
     description->setText(text);
     description->setVisibility(text.empty() ? brls::Visibility::GONE : brls::Visibility::VISIBLE);

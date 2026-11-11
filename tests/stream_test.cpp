@@ -157,6 +157,9 @@ TEST_CASE("display name and description fall back")
     CHECK(displayDescription(parse(R"({"title":"T","description":"D"})")) == "D");
     CHECK(displayDescription(parse(R"({"title":"T"})")) == "T");
     CHECK(descriptionLines("a\n\n b \nc\nd", 3) == std::vector<std::string>{"a", "b", "c"});
+    // add-ons such as AIOStreams put the languages on a fourth or fifth line
+    CHECK(descriptionLines("a\nb\n\nc\n🌎 English | Hindi\n📁 f.mkv") ==
+          std::vector<std::string>{"a", "b", "c", "🌎 English | Hindi", "📁 f.mkv"});
 }
 
 TEST_CASE("formatSize")

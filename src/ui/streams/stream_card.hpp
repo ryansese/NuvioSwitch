@@ -5,7 +5,7 @@
 
 #include "domain/stream.hpp"
 
-// One stream in the picker: its name, up to three lines of description, and the add-on
+// One stream in the picker: its name, its whole description, and the add-on
 // and file size. A stream that can't play is dimmed and labelled "Needs debrid" or "Unsupported".
 class StreamCard : public brls::Box
 {
