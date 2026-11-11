@@ -17,13 +17,16 @@
 #include "data/addons/addon_repository.hpp"
 #include "data/addons/addon_url.hpp"
 #include "data/catalog/catalog_repository.hpp"
+#include "data/library/library_repository.hpp"
 #include "data/meta/meta_repository.hpp"
 #include "data/player/subtitle_repository.hpp"
+#include "data/progress/progress_repository.hpp"
 #include "data/streams/stream_repository.hpp"
 #include "domain/playback_request.hpp"
 #include "tabs/placeholder_tab.hpp"
 #include "ui/addons/addons_tab.hpp"
 #include "ui/home/home_tab.hpp"
+#include "ui/library/library_tab.hpp"
 #include "ui/navigation.hpp"
 #include "ui/search/search_tab.hpp"
 #include "version.hpp"
@@ -187,6 +190,16 @@ int main(int argc, char* argv[])
         nuvio::data::player::SubtitleRepository::Config{http.get()});
     nuvio::data::player::SubtitleRepository::setShared(subtitles.get());
 
+    // watch progress, watched items and the Continue Watching hide list (NuvioSwitch-0009)
+    auto progress = std::make_unique<nuvio::data::progress::ProgressRepository>(
+        nuvio::data::progress::ProgressRepository::Config{storage::Store::open("watch_progress_recent"),
+            storage::Store::open("watch_progress_archive"), storage::Store::open("watched_items"),
+            storage::Store::open("cw_hidden"), nullptr});
+    nuvio::data::progress::ProgressRepository::setShared(progress.get());
+    auto library = std::make_unique<nuvio::data::library::LibraryRepository>(
+        nuvio::data::library::LibraryRepository::Config{storage::Store::open("library"), nullptr});
+    nuvio::data::library::LibraryRepository::setShared(library.get());
+
     applyNuvioTheme();
     brls::Application::getPlatform()->setThemeVariant(brls::ThemeVariant::DARK);
 
@@ -197,6 +210,7 @@ int main(int argc, char* argv[])
     brls::Application::registerXMLView("AddonsTab", AddonsTab::create);
     brls::Application::registerXMLView("HomeTab", HomeTab::create);
     brls::Application::registerXMLView("SearchTab", SearchTab::create);
+    brls::Application::registerXMLView("LibraryTab", LibraryTab::create);
 
     brls::Application::pushActivity(new MainActivity());
 
@@ -220,6 +234,10 @@ int main(int argc, char* argv[])
     while (brls::Application::mainLoop())
         ;
 
+    nuvio::data::library::LibraryRepository::setShared(nullptr);
+    library.reset();
+    nuvio::data::progress::ProgressRepository::setShared(nullptr);
+    progress.reset();
     // stop workers before the curl share and global state they use go away
     nuvio::data::player::SubtitleRepository::setShared(nullptr);
     subtitles.reset();

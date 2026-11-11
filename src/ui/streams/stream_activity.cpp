@@ -6,6 +6,7 @@
 #include "core/image/image_loader.hpp"
 #include "core/log.hpp"
 #include "data/addons/addon_repository.hpp"
+#include "data/progress/progress_repository.hpp"
 #include "data/streams/stream_rules.hpp"
 #include "domain/meta_format.hpp"
 #include "ui/common/scrim.hpp"
@@ -375,5 +376,12 @@ void StreamActivity::select(StreamCard* card)
     }
 
     if (auto playback = nuvio::data::streams::playbackRequest(stream, request))
+    {
+        // resume where the user left off, read now so a save made since the picker opened counts
+        namespace progress = nuvio::data::progress;
+        if (!request.startFromBeginning && progress::ProgressRepository::hasShared())
+            playback->startPositionMs = progress::resumePositionMs(progress::ProgressRepository::shared().get(
+                progress::progressKey(request.contentId, request.season, request.episode)));
         nuvio::ui::openPlayer(*playback);
+    }
 }

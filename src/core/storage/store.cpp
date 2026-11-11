@@ -113,6 +113,18 @@ void Store::remove(const std::string& key)
     data.erase(key);
 }
 
+Store::Json Store::all() const
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    return data;
+}
+
+void Store::replaceAll(Json object)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    data = object.is_object() ? std::move(object) : Json::object();
+}
+
 void Store::save()
 {
     std::string snapshot;

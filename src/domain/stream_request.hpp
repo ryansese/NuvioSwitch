@@ -22,6 +22,8 @@ struct StreamRequest
     std::optional<int> season;
     std::optional<int> episode;
     std::optional<std::string> episodeTitle;
+    // "Start from beginning" (NuvioSwitch-0009): ignore the saved position
+    bool startFromBeginning = false;
 };
 
 // Play: the meta's play video (see playVideoId), with the first episode's numbers for a series.

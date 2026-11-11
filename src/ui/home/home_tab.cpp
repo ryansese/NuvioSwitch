@@ -6,6 +6,7 @@
 #include "data/catalog/home_selection.hpp"
 #include "ui/common/viewport_box.hpp"
 #include "ui/home/catalog_row_view.hpp"
+#include "ui/home/continue_watching_row.hpp"
 #include "ui/home/hero_carousel.hpp"
 
 using namespace brls::literals; // for _i18n
@@ -70,6 +71,19 @@ HomeTab::HomeTab()
 
     hero = new HeroCarousel();
     content->addView(hero);
+
+    continueRow = new ContinueWatchingRow();
+    continueRow->onFocusLeaving = [this](ContinueWatchingRow*)
+    {
+        // the row's last card is going: the hero, else the first catalog row, else the state button
+        if (hero->getVisibility() == brls::Visibility::VISIBLE)
+            brls::Application::giveFocus(hero);
+        else if (!rows.empty() && rows.front()->getState() == CatalogRowView::State::Loaded)
+            brls::Application::giveFocus(rows.front());
+        else
+            brls::Application::giveFocus(stateButton);
+    };
+    content->addView(continueRow);
 
     stateBox = new brls::Box(brls::Axis::COLUMN);
     stateBox->setAlignItems(brls::AlignItems::CENTER);

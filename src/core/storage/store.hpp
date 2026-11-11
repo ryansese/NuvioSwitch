@@ -53,6 +53,10 @@ class Store
     void set(const std::string& key, Json value);
     void remove(const std::string& key);
 
+    // The whole object, and replacing it at once (stores whose keys are data, such as watch progress).
+    Json all() const;
+    void replaceAll(Json object);
+
     // Queues an atomic write of the current contents on the storage thread.
     // Saves are written in the order they were made.
     void save();

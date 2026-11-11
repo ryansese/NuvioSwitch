@@ -81,7 +81,23 @@
                 id="details/play"
                 text="@i18n/app/details/play"
                 style="primary"
-                marginBottom="20"/>
+                marginBottom="10"/>
+
+            <!-- library and (movies) watched toggles -->
+            <brls:Box
+                axis="row"
+                marginBottom="20">
+
+                <brls:Button
+                    id="details/library"
+                    text="@i18n/app/details/add_library"
+                    marginRight="10"/>
+
+                <brls:Button
+                    id="details/watched"
+                    text="@i18n/app/details/mark_watched"
+                    visibility="gone"/>
+            </brls:Box>
 
             <brls:Label
                 id="details/description"

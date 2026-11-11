@@ -5,10 +5,11 @@
 #include <vector>
 
 class CatalogRowView;
+class ContinueWatchingRow;
 class HeroCarousel;
 
-// Home in NuvioTV's Classic layout: a hero carousel above one row per catalog of
-// the enabled add-ons. The first 4 rows load at once; the rest load as they come
+// Home in NuvioTV's Classic layout: a hero carousel, the Continue Watching row (NuvioSwitch-0009)
+// when there is something to continue, then one row per catalog of the enabled add-ons. The first 4 rows load at once; the rest load as they come
 // within a row of the screen, and rows far off screen drop their textures.
 // Loaded pages are kept for the session (the tab view is recreated on every tab
 // switch), and Home rebuilds when the list of Home catalogs changes.
@@ -49,6 +50,7 @@ class HomeTab : public brls::Box
     brls::ScrollingFrame* scroll;
     brls::Box* content;
     HeroCarousel* hero;
+    ContinueWatchingRow* continueRow;
     brls::Box* stateBox;
     brls::Label* stateText;
     brls::Box* stateButton;

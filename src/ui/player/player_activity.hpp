@@ -8,6 +8,7 @@
 
 #include "data/player/player_rules.hpp"
 #include "data/player/subtitle_repository.hpp"
+#include "data/progress/progress_tracker.hpp"
 #include "domain/playback_request.hpp"
 #include "domain/subtitle.hpp"
 #include "ui/player/mpv_core.hpp"
@@ -24,6 +25,10 @@ class SeekBar;
 // With the controls hidden A pauses, Left/Right seek (further the longer they are held), Up, Down
 // and X show the controls and B leaves. ZL/ZR seek 10 s any time. B first hides panels and controls.
 // Leaving the activity stops mpv and frees its render context before the views go.
+//
+// Watch progress (NuvioSwitch-0009) is saved by a ProgressTracker: every 90 s while playing, on pause,
+// at the natural end, and on leaving (or quitting the app), with the last save written out before
+// the activity goes.
 class PlayerActivity : public brls::Activity
 {
   public:
@@ -62,10 +67,14 @@ class PlayerActivity : public brls::Activity
     void fillPanel();
     brls::Button* addPanelButton(const std::string& text, bool active, std::function<void()> onClick);
     void teardown();
+    void saveOnExit();
 
     nuvio::domain::PlaybackRequest request;
     std::unique_ptr<nuvio::ui::player::MpvCore> mpv;
     nuvio::data::player::SubtitleRepository::Ticket subtitleTicket = 0;
+    std::unique_ptr<nuvio::data::progress::ProgressTracker> tracker;
+    brls::VoidEvent::Subscription exitSubscription;
+    bool exitSaved = false;
 
     // what mpv last told us
     double position = 0;

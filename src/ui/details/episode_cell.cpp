@@ -30,6 +30,14 @@ void EpisodeCell::setEpisode(const nuvio::domain::Video& episode, const std::str
     ImageLoader::shared().load(thumbnail, url);
 }
 
+void EpisodeCell::setWatchState(bool watched, float fraction)
+{
+    check->setVisibility(watched ? brls::Visibility::VISIBLE : brls::Visibility::GONE);
+    bool showBar = !watched && fraction > 0;
+    bar->setVisibility(showBar ? brls::Visibility::VISIBLE : brls::Visibility::GONE);
+    fill->setWidth((160 - 16) * fraction);
+}
+
 void EpisodeCell::prepareForReuse()
 {
     ImageLoader::shared().cancel(thumbnail);

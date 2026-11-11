@@ -4,15 +4,23 @@
 
 #include "core/image/image_loader.hpp"
 #include "data/addons/addon_repository.hpp"
+#include "data/library/library_repository.hpp"
+#include "data/progress/continue_watching.hpp"
+#include "data/progress/progress_repository.hpp"
 #include "domain/meta_format.hpp"
 #include "domain/stream_request.hpp"
+#include "ui/common/options_menu.hpp"
 #include "ui/common/scrim.hpp"
+#include "ui/common/today.hpp"
 #include "ui/details/episode_cell.hpp"
 #include "ui/navigation.hpp"
 
 using namespace brls::literals; // for _i18n
 using nuvio::core::image::ImageLoader;
 using nuvio::data::addons::AddonRepository;
+using nuvio::data::library::LibraryRepository;
+using nuvio::data::progress::ProgressRepository;
+namespace progress = nuvio::data::progress;
 using nuvio::data::meta::MetaRepository;
 using namespace nuvio::domain;
 
@@ -34,7 +42,9 @@ class DetailsActivity::Episodes : public brls::RecyclerDataSource
     brls::RecyclerCell* cellForRow(brls::RecyclerFrame* recycler, brls::IndexPath index) override
     {
         auto* cell = static_cast<EpisodeCell*>(recycler->dequeueReusableCell("Episode"));
-        cell->setEpisode(owner->seasons[owner->selectedSeason].episodes[index.row], owner->meta.poster.value_or(""));
+        const Video& episode = owner->seasons[owner->selectedSeason].episodes[index.row];
+        cell->setEpisode(episode, owner->meta.poster.value_or(""));
+        owner->applyWatchState(cell, episode);
         return cell;
     }
 
@@ -57,6 +67,10 @@ DetailsActivity::DetailsActivity(const MetaPreview& item, const std::string& sou
 
 DetailsActivity::~DetailsActivity()
 {
+    if (ProgressRepository::hasShared())
+        ProgressRepository::shared().unsubscribe(progressSubscription);
+    if (LibraryRepository::hasShared())
+        LibraryRepository::shared().unsubscribe(librarySubscription);
     if (ticket && MetaRepository::hasShared())
         MetaRepository::shared().cancel(ticket);
     if (ImageLoader::hasShared())
@@ -81,6 +95,8 @@ brls::View* DetailsActivity::createContentView()
     info         = static_cast<brls::Label*>(content->getView("details/info"));
     genres       = static_cast<brls::Label*>(content->getView("details/genres"));
     playButton   = static_cast<brls::Button*>(content->getView("details/play"));
+    libraryButton = static_cast<brls::Button*>(content->getView("details/library"));
+    watchedButton = static_cast<brls::Button*>(content->getView("details/watched"));
     description  = static_cast<brls::Label*>(content->getView("details/description"));
     director     = static_cast<brls::Label*>(content->getView("details/director"));
     cast         = static_cast<brls::Label*>(content->getView("details/cast"));
@@ -103,9 +119,38 @@ brls::View* DetailsActivity::createContentView()
             return true;
         });
 
+    libraryButton->registerClickAction([this](brls::View*)
+        {
+            toggleLibrary();
+            return true;
+        });
+    watchedButton->registerClickAction([this](brls::View*)
+        {
+            toggleWatched();
+            return true;
+        });
+
     recycler->estimatedRowHeight = EpisodeCell::HEIGHT;
-    recycler->registerCell("Episode", EpisodeCell::create);
+    recycler->registerCell("Episode", [this]()
+        {
+            auto* cell = static_cast<EpisodeCell*>(EpisodeCell::create());
+            cell->registerAction("app/details/options"_i18n, brls::ControllerButton::BUTTON_X, [this, cell](brls::View*)
+                {
+                    episodeOptions(cell->getIndexPath().row);
+                    return true;
+                });
+            episodeCells.push_back(cell);
+            return cell;
+        });
     recycler->setDataSource(new Episodes(this));
+
+    // a save from the player, or a change made here, shows at once
+    progressSubscription = ProgressRepository::shared().subscribe([this]
+        {
+            updateActions();
+            refreshEpisodes();
+        });
+    librarySubscription = LibraryRepository::shared().subscribe([this] { updateActions(); });
 
     auto* frame = new brls::AppletFrame(content);
     frame->setHeaderVisibility(brls::Visibility::GONE);
@@ -224,6 +269,7 @@ void DetailsActivity::showMeta(const Meta& value)
 
     if (hasEpisodes)
         selectSeason(initialSeasonIndex(seasons, meta.defaultVideoId));
+    updateActions();
     brls::Application::giveFocus(playButton);
 }
 
@@ -259,8 +305,102 @@ void DetailsActivity::play()
 {
     if (!loaded)
         return;
+    // a series plays its in-progress or next episode; the stream picker resumes in-progress ones
+    if (target.episode)
+        return playEpisode(*target.episode);
     const Season* selected = selectedSeason < seasons.size() ? &seasons[selectedSeason] : nullptr;
     nuvio::ui::openStreams(streamRequestForPlay(meta, selected));
+}
+
+// The play button's label and the library and watched toggles, from the repositories.
+void DetailsActivity::updateActions()
+{
+    if (!loaded)
+        return;
+    auto& repo = ProgressRepository::shared();
+    target     = progress::playTarget(meta, repo.entries(), repo.watched(), nuvio::ui::today());
+
+    if (target.resume)
+        playButton->setText(brls::getStr("app/details/resume", progress::shortDuration(progress::remainingMs(*target.resume))));
+    else if (target.episode && target.episode->season && target.episode->episode)
+        playButton->setText(brls::getStr("app/details/play_episode", *target.episode->season, *target.episode->episode));
+    else
+        playButton->setText("app/details/play"_i18n);
+
+    libraryButton->setText(LibraryRepository::shared().contains(meta.id, meta.type) ? "app/details/remove_library"_i18n
+                                                                                     : "app/details/add_library"_i18n);
+
+    // a series is marked episode by episode
+    bool movie = seasons.empty();
+    watchedButton->setVisibility(movie ? brls::Visibility::VISIBLE : brls::Visibility::GONE);
+    if (movie)
+        watchedButton->setText(repo.isWatched(meta.id, std::nullopt, std::nullopt) ? "app/details/mark_unwatched"_i18n
+                                                                                   : "app/details/mark_watched"_i18n);
+}
+
+void DetailsActivity::applyWatchState(EpisodeCell* cell, const Video& episode)
+{
+    auto& repo   = ProgressRepository::shared();
+    bool watched = repo.isWatched(meta.id, episode.season, episode.episode);
+    float fraction = 0;
+    if (auto entry = repo.get(progress::progressKey(meta.id, episode.season, episode.episode)))
+        if (progress::isInProgress(*entry))
+            fraction = progress::progressPercentage(*entry);
+    cell->setWatchState(watched, fraction);
+}
+
+// Updates the episode cells on screen without reloading the list, which would move focus.
+void DetailsActivity::refreshEpisodes()
+{
+    if (selectedSeason >= seasons.size())
+        return;
+    const auto& list = seasons[selectedSeason].episodes;
+    for (auto* cell : episodeCells)
+    {
+        size_t row = cell->getIndexPath().row;
+        if (cell->getParent() && row < list.size())
+            applyWatchState(cell, list[row]);
+    }
+}
+
+void DetailsActivity::toggleLibrary()
+{
+    if (!loaded)
+        return;
+    auto& library = LibraryRepository::shared();
+    if (library.contains(meta.id, meta.type))
+        library.remove(meta.id, meta.type);
+    else
+        library.add(nuvio::data::library::itemFromMeta(meta, library.now()));
+}
+
+void DetailsActivity::toggleWatched()
+{
+    if (!loaded)
+        return;
+    auto& repo = ProgressRepository::shared();
+    if (repo.isWatched(meta.id, std::nullopt, std::nullopt))
+        repo.markUnwatched(meta.id, std::nullopt, std::nullopt);
+    else
+        repo.markWatched({meta.id, meta.type, meta.name, std::nullopt, std::nullopt, repo.now(), meta.poster});
+}
+
+void DetailsActivity::episodeOptions(size_t row)
+{
+    if (selectedSeason >= seasons.size() || row >= seasons[selectedSeason].episodes.size())
+        return;
+    Video episode = seasons[selectedSeason].episodes[row];
+    bool watched  = ProgressRepository::shared().isWatched(meta.id, episode.season, episode.episode);
+    std::vector<std::string> options{watched ? "app/details/mark_unwatched"_i18n : "app/details/mark_watched"_i18n};
+    nuvio::ui::showOptions(nuvio::domain::episodeHeading(episode), options, 0,
+        [this, episode, watched](int)
+        {
+            auto& repo = ProgressRepository::shared();
+            if (watched)
+                repo.markUnwatched(meta.id, episode.season, episode.episode);
+            else
+                repo.markWatched({meta.id, meta.type, meta.name, episode.season, episode.episode, repo.now(), meta.poster});
+        });
 }
 
 void DetailsActivity::playEpisode(const Video& episode)

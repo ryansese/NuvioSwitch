@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "data/meta/meta_repository.hpp"
+#include "data/progress/play_target.hpp"
 #include "domain/meta.hpp"
 #include "domain/meta_preview.hpp"
 
@@ -11,6 +12,13 @@
 // a hero column with Play, and for series season tabs with an episode list.
 // Shows a spinner while loading and an error with Retry when no add-on has the title.
 // B returns to where the user came from.
+//
+// NuvioSwitch-0009 adds "Add to / Remove from library", "Mark as watched / unwatched" for movies, check
+// marks and progress bars on episodes with X for an episode's options, and a play button that resumes
+// ("Resume · 52m left") or names the next episode ("Play S1E4"). These follow the library and progress
+// repositories while the screen is open.
+class EpisodeCell;
+
 class DetailsActivity : public brls::Activity
 {
   public:
@@ -31,6 +39,12 @@ class DetailsActivity : public brls::Activity
     void revealSeason(size_t index);
     void play();
     void playEpisode(const nuvio::domain::Video& episode);
+    void updateActions();
+    void refreshEpisodes();
+    void applyWatchState(EpisodeCell* cell, const nuvio::domain::Video& episode);
+    void toggleLibrary();
+    void toggleWatched();
+    void episodeOptions(size_t row);
 
     nuvio::domain::MetaPreview item;
     std::string sourceAddonName;
@@ -42,6 +56,10 @@ class DetailsActivity : public brls::Activity
     std::vector<brls::Button*> seasonButtons;
     float tabOffset = 0; // how far the season tabs are slid to the left
     bool loaded = false;
+    nuvio::data::progress::PlayTarget target;
+    std::vector<EpisodeCell*> episodeCells; // every cell the list made, for refreshing in place
+    int progressSubscription = 0;
+    int librarySubscription  = 0;
 
     brls::Image* backdrop        = nullptr;
     brls::Box* status            = nullptr;
@@ -54,6 +72,8 @@ class DetailsActivity : public brls::Activity
     brls::Label* info            = nullptr;
     brls::Label* genres          = nullptr;
     brls::Button* playButton     = nullptr;
+    brls::Button* libraryButton  = nullptr;
+    brls::Button* watchedButton  = nullptr;
     brls::Label* description     = nullptr;
     brls::Label* director        = nullptr;
     brls::Label* cast            = nullptr;

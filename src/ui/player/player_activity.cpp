@@ -6,6 +6,7 @@
 #include "core/log.hpp"
 #include "data/addons/addon_repository.hpp"
 #include "data/addons/addon_url.hpp"
+#include "data/progress/progress_repository.hpp"
 #include "domain/meta.hpp"
 #include "domain/meta_format.hpp"
 #include "ui/player/player_view.hpp"
@@ -15,6 +16,8 @@ using namespace brls::literals; // for _i18n
 using nuvio::data::addons::AddonRepository;
 using nuvio::data::player::SubtitleRepository;
 using nuvio::data::player::Track;
+using nuvio::data::progress::ProgressRepository;
+using nuvio::data::progress::ProgressTracker;
 using namespace nuvio::ui::player;
 
 namespace
@@ -48,18 +51,65 @@ std::string describe(const Track& track, const std::string& fallback)
         add(track.channels == 6 ? "5.1" : track.channels == 8 ? "7.1" : track.channels == 2 ? "2.0" : std::to_string(track.channels) + "ch");
     return text.empty() ? fallback : text;
 }
+
+// What a progress save holds besides the position: the title, its artwork and the video.
+nuvio::data::progress::WatchProgress progressBase(const nuvio::domain::PlaybackRequest& request)
+{
+    nuvio::data::progress::WatchProgress base;
+    base.contentId    = request.contentId;
+    base.contentType  = request.contentType;
+    base.name         = request.title;
+    base.poster       = request.poster;
+    base.backdrop     = request.backdrop;
+    base.logo         = request.logo;
+    base.videoId      = request.videoId;
+    base.season       = request.season;
+    base.episode      = request.episode;
+    base.episodeTitle = request.episodeTitle;
+    return base;
+}
+
+int64_t monotonicMs()
+{
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+}
 } // namespace
 
-PlayerActivity::PlayerActivity(const nuvio::domain::PlaybackRequest& request) : request(request) { }
+PlayerActivity::PlayerActivity(const nuvio::domain::PlaybackRequest& request) : request(request)
+{
+    if (ProgressRepository::hasShared() && !request.contentId.empty())
+        tracker = std::make_unique<ProgressTracker>(progressBase(request),
+            [](const nuvio::data::progress::WatchProgress& entry)
+            {
+                if (ProgressRepository::hasShared())
+                    ProgressRepository::shared().save(entry);
+            },
+            monotonicMs, [] { return ProgressRepository::shared().now(); });
+    // + quits from the player too: keep where the user was
+    exitSubscription = brls::Application::getExitEvent()->subscribe([this]() { saveOnExit(); });
+}
 
 PlayerActivity::~PlayerActivity()
 {
+    brls::Application::getExitEvent()->unsubscribe(exitSubscription);
     teardown();
+}
+
+// The last save of the session, written to the SD card before returning.
+void PlayerActivity::saveOnExit()
+{
+    if (exitSaved || !tracker || !ProgressRepository::hasShared())
+        return;
+    exitSaved = true;
+    tracker->onExit();
+    ProgressRepository::flush();
 }
 
 // Stops everything that talks to mpv or the GL context while both are still alive.
 void PlayerActivity::teardown()
 {
+    saveOnExit();
     closing = true;
     if (subtitleTicket && SubtitleRepository::hasShared())
         SubtitleRepository::shared().cancel(subtitleTicket);
@@ -99,6 +149,8 @@ brls::View* PlayerActivity::createContentView()
     {
         position = seconds;
         updateTimes();
+        if (tracker)
+            tracker->onTick(static_cast<int64_t>(position * 1000), static_cast<int64_t>(duration * 1000));
     };
     events.onDuration = [this](double seconds)
     {
@@ -124,12 +176,16 @@ brls::View* PlayerActivity::createContentView()
     events.onPlaybackStarted = [this]()
     {
         started = true;
+        if (tracker)
+            tracker->onFirstFrame();
         nuvio::core::log::info("Playback started at " + nuvio::data::player::formatTime(position));
         updateSpinner();
     };
     // keep-open leaves the last frame up; the controls show so the user can pick something else
     events.onEnded = [this]()
     {
+        if (tracker)
+            tracker->onNaturalEnd();
         if (!closing)
             showControls();
     };
@@ -348,6 +404,8 @@ void PlayerActivity::togglePause()
 
 void PlayerActivity::updatePaused(bool value)
 {
+    if (value && !paused && tracker)
+        tracker->onPause();
     paused = value;
     playButton->setText(paused ? "app/player/play"_i18n : "app/player/pause"_i18n);
     pausedLabel->setVisibility(paused ? brls::Visibility::VISIBLE : brls::Visibility::GONE);
@@ -394,6 +452,7 @@ void PlayerActivity::closeToPicker()
 {
     if (closing)
         return;
+    saveOnExit();
     closing = true;
     if (mpv)
         mpv->stop();
@@ -405,6 +464,7 @@ void PlayerActivity::closeToDetails()
 {
     if (closing)
         return;
+    saveOnExit();
     closing = true;
     if (mpv)
         mpv->stop();

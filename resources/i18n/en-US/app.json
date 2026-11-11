@@ -50,7 +50,14 @@
     "open_addons": "Open Add-ons",
     "error": "Couldn't load any catalogs. Check your connection.",
     "retry": "Retry",
-    "page_failed": "Couldn't load more: {}"
+    "page_failed": "Couldn't load more: {}",
+    "continue_watching": "Continue Watching",
+    "next_up": "Next up",
+    "time_left": "{} left",
+    "start_over": "Start from beginning",
+    "go_to_details": "Go to details",
+    "remove": "Remove",
+    "options": "Options"
   },
   "search": {
     "hint": "Search movies and shows",
@@ -62,6 +69,23 @@
     "no_support": "No installed add-on supports search",
     "no_results": "No results for \"{}\""
   },
+  "library": {
+    "sort": "Sort: {}",
+    "type": "Type: {}",
+    "sort_title": "Sort by",
+    "type_title": "Show",
+    "sort_default": "Provider order",
+    "sort_added_desc": "Date added (newest)",
+    "sort_added_asc": "Date added (oldest)",
+    "sort_title_asc": "Title A–Z",
+    "sort_title_desc": "Title Z–A",
+    "type_all": "All",
+    "type_movies": "Movies",
+    "type_series": "Series",
+    "empty": "Your library is empty",
+    "empty_hint": "Use \"Add to library\" on a title to save it here.",
+    "empty_filtered": "Nothing of this type in your library"
+  },
   "details": {
     "play": "Play",
     "retry": "Retry",
@@ -69,7 +93,15 @@
     "season": "Season {}",
     "specials": "Specials",
     "director": "Director: {}",
-    "cast": "Cast: {}"
+    "cast": "Cast: {}",
+    "add_library": "Add to library",
+    "remove_library": "Remove from library",
+    "mark_watched": "Mark as watched",
+    "mark_unwatched": "Mark as unwatched",
+    "resume": "Resume · {} left",
+    "play_episode": "Play S{}E{}",
+    "start_over": "Start from beginning",
+    "options": "Options"
   },
   "streams": {
     "all": "All",
